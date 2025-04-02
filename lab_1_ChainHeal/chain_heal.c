@@ -55,29 +55,51 @@ int main(int argc, char **argv)
 
 	for(x = 0; x < node_number; x++) printf("%s\n", player_list[x]->name);
 	for(x = 0; x < node_number; x++) {
-		for(y = 0; y < node_number; y++) {
-			if(x != y) {
+		if(strcmp(player_list[x]->name, "Urgosa_the_Healing_Shaman") == 0) {
+			for(y = 0; y < node_number; y++) {
 				x_distance = player_list[x]->x - player_list[y]->x;
 				y_distance = player_list[x]->y - player_list[y]->y;
 				distance = sqrt(x_distance*x_distance + y_distance*y_distance);
-				if(distance <= jump_range) player_list[x]->adj_size++;
+				if(distance <= initial_range) player_list[x]->adj_size++;
 			}
-		}
-		printf("%d\n", player_list[x]->adj_size);
-		player_list[x]->adj = (Node **) malloc(sizeof(Node *) * player_list[x]->adj_size);
-		z = 0;
-		for(y = 0; y < node_number; y++) {
-			if(x != y) {
+			printf("%d\n", player_list[x]->adj_size);
+			player_list[x]->adj = (Node **) malloc(sizeof(Node *) * player_list[x]->adj_size);
+			z = 0;
+			for(y = 0; y < node_number; y++) {
 				x_distance = player_list[x]->x - player_list[y]->x;
 				y_distance = player_list[x]->y - player_list[y]->y;
 				distance = sqrt(x_distance*x_distance + y_distance*y_distance);
-				if(distance <= jump_range) {
+				if(distance <= initial_range) {
 					player_list[x]->adj[z] = player_list[y];
 					z++;
 				}
-				
 			}
 		}
+		else {
+			for(y = 0; y < node_number; y++) {
+				if(x != y) {
+					x_distance = player_list[x]->x - player_list[y]->x;
+					y_distance = player_list[x]->y - player_list[y]->y;
+					distance = sqrt(x_distance*x_distance + y_distance*y_distance);
+					if(distance <= jump_range) player_list[x]->adj_size++;
+				}
+			}
+			printf("%d\n", player_list[x]->adj_size);
+			player_list[x]->adj = (Node **) malloc(sizeof(Node *) * player_list[x]->adj_size);
+			z = 0;
+			for(y = 0; y < node_number; y++) {
+				if(x != y) {
+					x_distance = player_list[x]->x - player_list[y]->x;
+					y_distance = player_list[x]->y - player_list[y]->y;
+					distance = sqrt(x_distance*x_distance + y_distance*y_distance);
+					if(distance <= jump_range) {
+						player_list[x]->adj[z] = player_list[y];
+						z++;
+					}
+				}
+			}
+		}
+		
 	}
 	for(x = 0; x < node_number; x++) {
 		printf("adj list %s\n\n", player_list[x]->name);
