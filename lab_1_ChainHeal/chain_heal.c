@@ -14,6 +14,7 @@ typedef struct node
 	struct node **adj;
 	int visited;
 	int starting_node;
+	int healing;
 } Node;
 
 
@@ -21,24 +22,42 @@ typedef struct global_variables
 {
 	int initial_range, jump_range, num_jumps, initial_power, best_healing;
 	double power_reduction;
+	int best_path_length;
+	Node **best_path;
+	int *healing;
+
 
 } Global;
 
 int DFS(Node *node, int jump_number, Global *global, int total_healing) {
-	printf("Node:%s Jump %d\n", node->name, jump_number);
+	
 	node->visited = 1;
 	jump_number++;
+	int healing;
 	if(node->max_PP - node->cur_PP <= global->initial_power) {
-		total_healing += (node->max_PP - node->cur_PP);
+		healing = (node->max_PP - node->cur_PP);
 	}
 	else {
-		total_healing += global->initial_power;
+		healing = global->initial_power;
+	}
+	total_healing += healing;
+	node->healing = healing;
+	if(total_healing > global->best_healing) {
+		global->best_healing = total_healing;
+		global->best_path_length = 0;
+		Node *n = node;
+		while(n != NULL) {
+			global->best_path[global->best_path_length] = n;
+			global->healing[global->best_path_length] = n->healing;
+			global->best_path_length++;
+			n = n->prev;
+		}
 	}
 	int initial_power_temp = global->initial_power;
 	global->initial_power = rint(global->initial_power * (1 - global->power_reduction));
-	if(total_healing > global->best_healing) global->best_healing = total_healing;
 	for(int x = 0; x < node->adj_size; x++) {
 		if(node->adj[x]->visited != 1 && jump_number <= global->num_jumps) {
+			node->adj[x]->prev = node;
 			int res = DFS(node->adj[x], jump_number, global, total_healing);
 		}
 	}
@@ -62,15 +81,7 @@ int main(int argc, char **argv)
 	initial_power = atoi(argv[4]);
 	power_reduction = atof(argv[5]);
 
-	Global *global = (Global *) malloc(sizeof(Global));
-	global->initial_range = initial_range;
-	global->jump_range = jump_range;
-	global->num_jumps = num_jumps;
-	global->initial_power = initial_power;
-	global->power_reduction = power_reduction;
-	printf("argv[5] %s\n", argv[5]);
-	printf("initial power %d\n", initial_power);
-	printf("power reduction %f\n", power_reduction);
+	
 
 	while (scanf("%d", &x) == 1 && scanf("%d", &y) == 1 && scanf("%d", &cur_PP) == 1 && scanf("%d", &max_PP) == 1 && scanf("%s", &name) == 1) {
 		temp_node = new_node;
@@ -86,9 +97,18 @@ int main(int argc, char **argv)
 		new_node->visited = 0;
 		new_node->starting_node = 0;
 		node_number++;
-		printf("%d %d %d %d %s\n", new_node->x, new_node->y, new_node->cur_PP, new_node->max_PP, new_node->name);
 	}
-	printf("node number is %d\n", node_number);
+
+
+	Global *global = (Global *) malloc(sizeof(Global));
+	global->initial_range = initial_range;
+	global->jump_range = jump_range;
+	global->num_jumps = num_jumps;
+	global->initial_power = initial_power;
+	global->power_reduction = power_reduction;
+	global->best_path = (Node **) malloc(sizeof(Node *) * num_jumps);
+	global->healing = (int *) malloc(sizeof(int) * num_jumps);
+
 	player_list = (Node **) malloc(sizeof(Node *) * node_number);
 	x = 0;
 	while(new_node != NULL) {
@@ -97,8 +117,6 @@ int main(int argc, char **argv)
 		x++;
 	}
 
-	for(x = 0; x < node_number; x++) printf("%s\n", player_list[x]->name);
-	//check if it qualifies as a starting node, set that on node, then fill adj list
 	for(x = 0; x < node_number; x++) {
 		if(strcmp(player_list[x]->name, "Urgosa_the_Healing_Shaman") == 0) {
 			for(y = 0; y < node_number; y++) {
@@ -119,7 +137,6 @@ int main(int argc, char **argv)
 				if(distance <= jump_range) player_list[x]->adj_size++;
 			}
 		}
-		printf("%d\n", player_list[x]->adj_size);
 		player_list[x]->adj = (Node **) malloc(sizeof(Node *) * player_list[x]->adj_size);
 		z = 0;
 		for(y = 0; y < node_number; y++) {
@@ -136,20 +153,17 @@ int main(int argc, char **argv)
 		
 		
 	}
-	for(x = 0; x < node_number; x++) {
-		printf("adj list %s\n", player_list[x]->name);
-		for(y = 0; y < player_list[x]->adj_size; y++) {
-			printf("%s\n", player_list[x]->adj[y]->name);
-		}
-	}
+	
 	for(x = 0; x < node_number; x++) {
 		if(player_list[x]->starting_node == 1) {
-			printf("starting node found\n");
+			player_list[x]->prev = NULL;
 			int res = DFS(player_list[x], 1, global, 0);
 		}
 	}
-	printf("best healing: %d\n", global->best_healing);
-
+	for(x = global->best_path_length - 1; x >= 0; x--) {
+		printf("%s %d\n", global->best_path[x]->name, global->healing[x]);
+	}
+	printf("Total_Healing %d\n", global->best_healing);
 	exit(0);
 }
 
