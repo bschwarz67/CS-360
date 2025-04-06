@@ -20,8 +20,8 @@ typedef struct node
 
 typedef struct global_variables
 {
-	int initial_range, jump_range, num_jumps, initial_power, best_healing;
-	double power_reduction;
+	int initial_range, jump_range, num_jumps, best_healing;
+	double power_reduction, initial_power;
 	int best_path_length;
 	Node **best_path;
 	int *healing;
@@ -29,16 +29,17 @@ typedef struct global_variables
 
 } Global;
 
-int DFS(Node *node, int jump_number, Global *global, int total_healing) {
+void DFS(Node *node, int jump_number, Global *global, int total_healing) {
 	
 	node->visited = 1;
 	jump_number++;
 	int healing;
-	if(node->max_PP - node->cur_PP <= global->initial_power) {
+	if(node->max_PP - node->cur_PP <= rint(global->initial_power)) {
 		healing = (node->max_PP - node->cur_PP);
 	}
 	else {
-		healing = global->initial_power;
+		//printf("unrounded healing %f\n", global->initial_power);
+		healing = (int) rint(global->initial_power);
 	}
 	total_healing += healing;
 	node->healing = healing;
@@ -53,17 +54,16 @@ int DFS(Node *node, int jump_number, Global *global, int total_healing) {
 			n = n->prev;
 		}
 	}
-	int initial_power_temp = global->initial_power;
-	global->initial_power = rint(global->initial_power * (1 - global->power_reduction));
+	double initial_power_temp = global->initial_power;
+	global->initial_power = global->initial_power * (1 - global->power_reduction);
 	for(int x = 0; x < node->adj_size; x++) {
 		if(node->adj[x]->visited != 1 && jump_number <= global->num_jumps) {
 			node->adj[x]->prev = node;
-			int res = DFS(node->adj[x], jump_number, global, total_healing);
+			DFS(node->adj[x], jump_number, global, total_healing);
 		}
 	}
 	global->initial_power = initial_power_temp;
 	node->visited = 0;
-	return 0;
 }
 
 
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
 	power_reduction = atof(argv[5]);
 
 	
-
+	printf("processing text input...\n");
 	while (scanf("%d", &x) == 1 && scanf("%d", &y) == 1 && scanf("%d", &cur_PP) == 1 && scanf("%d", &max_PP) == 1 && scanf("%s", &name) == 1) {
 		temp_node = new_node;
 		new_node = (Node *) malloc(node_size);	
@@ -116,7 +116,7 @@ int main(int argc, char **argv)
 		new_node = new_node->prev;
 		x++;
 	}
-
+	printf("creating a list of starting nodes...\n");
 	for(x = 0; x < node_number; x++) {
 		if(strcmp(player_list[x]->name, "Urgosa_the_Healing_Shaman") == 0) {
 			for(y = 0; y < node_number; y++) {
@@ -127,6 +127,7 @@ int main(int argc, char **argv)
 			}
 		}
 	}
+	printf("creating adjacency lists....\n");
 	for(x = 0; x < node_number; x++) {
 		
 		for(y = 0; y < node_number; y++) {
@@ -153,11 +154,11 @@ int main(int argc, char **argv)
 		
 		
 	}
-	
+	printf("DFS...\n");
 	for(x = 0; x < node_number; x++) {
 		if(player_list[x]->starting_node == 1) {
 			player_list[x]->prev = NULL;
-			int res = DFS(player_list[x], 1, global, 0);
+			DFS(player_list[x], 1, global, 0);
 		}
 	}
 	for(x = global->best_path_length - 1; x >= 0; x--) {
