@@ -1,0 +1,10 @@
+Lab made my Dr James Plank / Adam Disney for UT Knoxville cosc 360 lab. Full description here https://web.eecs.utk.edu/~jplank/plank/classes/cs360/360/labs/Lab-1-Chain-Heal/chain_heal_check
+
+In summary, this lab is to write a program that takes an input file that describes positions of 'players' that can all be healed a certain amount.
+A graph is defined by command line input values of the minimum distance of the players from each other to be linked and the minimum distance players can be reached from
+the starting point in the graph, Urgosa_the_Healing_Shaman.
+
+The goal is to calculate the path through the graph where you can 'heal' the most points given the contraints of the maximum you can heal at once, how much healing max decreases after healing, 
+and number of hops taken in the graph.
+
+DFS is used to calculate this. The entire lab is written in C without any external libraries.
