@@ -82,7 +82,6 @@ int main(int argc, char **argv)
 	power_reduction = atof(argv[5]);
 
 	
-	printf("processing text input...\n");
 	while (scanf("%d", &x) == 1 && scanf("%d", &y) == 1 && scanf("%d", &cur_PP) == 1 && scanf("%d", &max_PP) == 1 && scanf("%s", &name) == 1) {
 		temp_node = new_node;
 		new_node = (Node *) malloc(node_size);	
@@ -116,7 +115,6 @@ int main(int argc, char **argv)
 		new_node = new_node->prev;
 		x++;
 	}
-	printf("creating a list of starting nodes...\n");
 	for(x = 0; x < node_number; x++) {
 		if(strcmp(player_list[x]->name, "Urgosa_the_Healing_Shaman") == 0) {
 			for(y = 0; y < node_number; y++) {
@@ -127,7 +125,6 @@ int main(int argc, char **argv)
 			}
 		}
 	}
-	printf("creating adjacency lists....\n");
 	for(x = 0; x < node_number; x++) {
 		
 		for(y = 0; y < node_number; y++) {
@@ -154,7 +151,6 @@ int main(int argc, char **argv)
 		
 		
 	}
-	printf("DFS...\n");
 	for(x = 0; x < node_number; x++) {
 		if(player_list[x]->starting_node == 1) {
 			player_list[x]->prev = NULL;
