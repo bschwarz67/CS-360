@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 
 typedef struct huff_node {
@@ -13,7 +14,7 @@ typedef struct huff_node {
 
 int main(int argc, char **argv)
 {
-    int i, j, k;
+    int i, j, k, l, m;
     FILE *fd;
     char c = '1', *str_buff, *bit_buff;
     HN *hn, *hn_root;
@@ -41,7 +42,6 @@ int main(int argc, char **argv)
         while(c != 0 && i > 0) {
             str_buff[j] = c;
             i = fread(&c, 1, 1, fd);
-
             j++;
         }
         str_buff[j] = '\0'; 
@@ -57,16 +57,21 @@ int main(int argc, char **argv)
         while(c != 0 && i > 0 && (c == 48 || c == 49)) {
             bit_buff[j] = c;
             i = fread(&c, 1, 1, fd);
-
             j++;
         }
         bit_buff[j] = '\0'; 
         if(i <= 0) break;
-        printf("%s %s\n", str_buff, bit_buff);
-        for(k = 0; k < j - 1; k++) {
-            if(k == j - 2) {
-                if(bit_buff[k] == '1') strcpy(hn->s_one, str_buff);
-                else strcpy(hn->s_zero, str_buff);
+        printf("%s %s %d\n", str_buff, bit_buff, j);
+        for(k = 0; k < j; k++) {
+            if(k == j - 1) {
+                if(bit_buff[k] == '1') {
+                    strcpy(hn->s_one, str_buff);
+                    printf("%s %d\n", str_buff, k);
+                }
+                else {
+                    strcpy(hn->s_zero, str_buff);
+                    printf("%s %d\n", str_buff, k);
+                } 
             }
             else if(bit_buff[k] == '1') {
                 if(hn->one == NULL) {
@@ -97,7 +102,45 @@ int main(int argc, char **argv)
 
     
     fclose(fd);
+    fd = fopen(argv[2], "r");
+    i = 1;
+    j = 0;
+    while(i > 0) {
+        i = fread(&c, 1, 1, fd);
+        j++;
+    }
+    if(j < 4) return 0;
 
+    j = 0;
+    l = 0;
+    fseek(fd, -4, SEEK_END);
+    fread(&i, 1, 1, fd);
+    for(k = 0; k < 8; k++) {
 
+        l += pow(2, j) * (i % 2);
+        i = i / 2;
+        j++;
+    }
+    printf("%d\n",l);
+    fread(&i, 1, 1, fd);
+    for(k = 0; k < 8; k++) {
+
+        l += pow(2, j) * (i % 2);
+        i = i / 2;
+        j++;
+    }
+    fread(&i, 1, 1, fd);for(k = 0; k < 8; k++) {
+
+        l += pow(2, j) * (i % 2);
+        i = i / 2;
+        j++;
+    }
+    fread(&i, 1, 1, fd);
+    for(k = 0; k < 8; k++) {
+
+        l += pow(2, j) * (i % 2);
+        i = i / 2;
+        j++;
+    }
     return 0;
 }
