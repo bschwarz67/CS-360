@@ -109,7 +109,7 @@ int main(int argc, char **argv)
         i = fread(&c, 1, 1, fd);
         j++;
     }
-    if(j < 4) return 0;
+    if(j < 5) return 0;
 
     j = 0;
     l = 0;
