@@ -14,7 +14,7 @@ typedef struct huff_node {
 
 int main(int argc, char **argv)
 {
-    int i, j, k, l, m;
+    int i, j, k, l, m, n;
     FILE *fd;
     char c = '1', *str_buff, *bit_buff;
     HN *hn, *hn_root;
@@ -23,7 +23,9 @@ int main(int argc, char **argv)
     hn->zero = NULL;
     hn->one = NULL;
     hn->s_zero = malloc(sizeof(char) * 10001);
+    hn->s_zero = "root";
     hn->s_one = malloc(sizeof(char) * 10001);
+    hn->s_one = "root";
 
 
     fd = fopen(argv[1], "r");
@@ -60,17 +62,14 @@ int main(int argc, char **argv)
             j++;
         }
         bit_buff[j] = '\0'; 
-        if(i <= 0) break;
-        printf("%s %s %d\n", str_buff, bit_buff, j);
+        hn = hn_root;
         for(k = 0; k < j; k++) {
             if(k == j - 1) {
                 if(bit_buff[k] == '1') {
                     strcpy(hn->s_one, str_buff);
-                    printf("%s %d\n", str_buff, k);
                 }
                 else {
                     strcpy(hn->s_zero, str_buff);
-                    printf("%s %d\n", str_buff, k);
                 } 
             }
             else if(bit_buff[k] == '1') {
@@ -97,6 +96,7 @@ int main(int argc, char **argv)
             }
         }
         hn = hn_root;
+        if(i <= 0) break;
 
     }
 
@@ -112,35 +112,96 @@ int main(int argc, char **argv)
     if(j < 5) return 0;
 
     j = 0;
-    l = 0;
+    k = 0;
     fseek(fd, -4, SEEK_END);
     fread(&i, 1, 1, fd);
-    for(k = 0; k < 8; k++) {
-
-        l += pow(2, j) * (i % 2);
+    for(j = 0; j < 8; j++) {
+        k += pow(2, j) * (i % 2);
         i = i / 2;
-        j++;
-    }
-    printf("%d\n",l);
-    fread(&i, 1, 1, fd);
-    for(k = 0; k < 8; k++) {
-
-        l += pow(2, j) * (i % 2);
-        i = i / 2;
-        j++;
-    }
-    fread(&i, 1, 1, fd);for(k = 0; k < 8; k++) {
-
-        l += pow(2, j) * (i % 2);
-        i = i / 2;
-        j++;
     }
     fread(&i, 1, 1, fd);
-    for(k = 0; k < 8; k++) {
-
-        l += pow(2, j) * (i % 2);
+    for(j = 8; j < 16; j++) {
+        k += pow(2, j) * (i % 2);
         i = i / 2;
-        j++;
     }
+    fread(&i, 1, 1, fd);
+    for(j = 16; j < 24; j++) {
+        k += pow(2, j) * (i % 2);
+        i = i / 2;
+    }
+    fread(&i, 1, 1, fd);
+    for(j = 24; j < 32; j++) {
+        k += pow(2, j) * (i % 2);
+        i = i / 2;
+    }
+
+    fseek(fd, 0, SEEK_SET);
+
+    bit_buff = (char *) malloc(sizeof(char) * 10001);
+    m = 0;
+    n = k;
+    if(n % 8 != 0) j = (n / 8) + 1;
+    else j = n / 8;
+
+
+    i = 1;
+    k = 0;
+    while(i > 0) {
+        i = fread(&c, 1, 1, fd);
+        if(i > 0) k++; 
+    }
+
+    if(k - 4 != j) return 0;
+    fseek(fd, 0, SEEK_SET);
+
+    for(k = 0; k < j; k++){
+        fread(&i, 1, 1, fd);
+        
+        for(l = 0; l < 8; l++) {
+            if(i % 2 == 0) bit_buff[m] = '0';
+            else bit_buff[m] = '1';
+            i = i / 2;
+            m++;
+        }
+        
+    }
+    bit_buff[m] = '\0';
+
+    /*
+    for(i = 0; i < m; i++) {
+        printf("%c", bit_buff[i]);
+    }
+    printf("\n");
+    */
+    i = 0;
+    hn = hn_root;
+    
+    while(i < n) {
+        if(hn->zero == NULL && bit_buff[i] == '0') {
+
+            printf("%s", hn->s_zero);
+            hn = hn_root;
+        }
+        else if(hn->one == NULL && bit_buff[i] == '1') {
+
+            printf("%s", hn->s_one);
+            hn = hn_root;
+        }
+        else if(hn->zero != NULL && bit_buff[i] == '0') {
+            hn = hn->zero;
+        }
+        else if(hn->one != NULL && bit_buff[i] == '1') {
+
+            hn = hn->one;
+        }
+        else {
+            return 0;
+        }
+        i++;   
+    }
+    
+
+    
+    
     return 0;
 }
