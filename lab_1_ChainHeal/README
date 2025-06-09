@@ -8,3 +8,7 @@ The goal is to calculate the path through the graph where you can 'heal' the mos
 and number of hops taken in the graph.
 
 DFS is used to calculate this. The entire lab is written in C without any external libraries.
+
+
+compile: gcc -Wall -Wextra -o chain_heal chain_heal.c -lm
+run: chain_heal initial_range jump_range num_jumps initial_power power_reduction < input_file
