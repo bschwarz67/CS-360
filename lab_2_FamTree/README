@@ -4,3 +4,8 @@ for grading/testing.
 In summary, the lab reads a formatted text file that describes a family as a graph. The program creates links between named relatives and infers their sex based on explicit sex or relations.
 The data is checked as the file is read for sex conflicts or conflicts in who is named the parent of a child. The resulting graph is checked for cycles, which signify an impossible family. Finally
 the graph is printed such that no child is printed before their parent using topoligical sort.
+
+
+compile: make
+run: ./bin/famtree < {input text file}
+grade: gradescript.sh (1-100)
