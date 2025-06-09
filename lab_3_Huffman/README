@@ -5,3 +5,4 @@ complete description here https://web.eecs.utk.edu/~jplank/plank/classes/cs360/3
 
 compile: gcc -Wall -Wextra -o bin/huff_dec huff_dec.c -lm
 run: ./bin/huff_dec {Huffman code definition file} {input bitstream file}
+grade: gradescript (1-100)
