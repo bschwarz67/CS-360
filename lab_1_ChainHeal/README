@@ -12,3 +12,4 @@ DFS is used to calculate this. The entire lab is written in C without any extern
 
 compile: gcc -Wall -Wextra -o chain_heal chain_heal.c -lm
 run: chain_heal initial_range jump_range num_jumps initial_power power_reduction < input_file
+grade: gradescript (1-100)
