@@ -1,6 +1,7 @@
 #!/bin/sh 
 
 dir=/home/bryan/Desktop/PersonalCodeRepo/CS-360/lab_3_Huffman
+plank_sol=/home/bryan/Desktop/PersonalCodeRepo/CS-360/lab_3_Huffman/plank_sol_bin/huff_dec
 ge="$dir/Gradescript-Examples"
 
 if [ $# -ne 1 ]; then
@@ -26,7 +27,7 @@ fi
 
 rm -f tmp-$enum-test-stdout.txt tmp-$enum-test-stderr.txt tmp-$enum-correct-stdout.txt tmp-$enum-correct-stderr.txt
 
-  $dir/$program $ge/$enum-code.txt $ge/$enum-input.txt > tmp-$enum-correct-stdout.txt 2> tmp-$enum-correct-stderr.txt
+  $plank_sol $ge/$enum-code.txt $ge/$enum-input.txt > tmp-$enum-correct-stdout.txt 2> tmp-$enum-correct-stderr.txt
   ./$program $ge/$enum-code.txt $ge/$enum-input.txt > tmp-$enum-test-stdout.txt 2> tmp-$enum-test-stderr.txt
   call="./$program $ge/$enum-code.txt $ge/$enum-input.txt"
 

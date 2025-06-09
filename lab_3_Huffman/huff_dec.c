@@ -14,6 +14,10 @@ typedef struct huff_node {
 
 int main(int argc, char **argv)
 {
+
+
+
+
     int i, j, k, l, m, n;
     FILE *fd;
     char c = '1', *str_buff, *bit_buff;
@@ -23,10 +27,7 @@ int main(int argc, char **argv)
     hn->zero = NULL;
     hn->one = NULL;
     hn->s_zero = malloc(sizeof(char) * 10001);
-    hn->s_zero = "root";
     hn->s_one = malloc(sizeof(char) * 10001);
-    hn->s_one = "root";
-
 
     fd = fopen(argv[1], "r");
     while(1) {
@@ -99,8 +100,6 @@ int main(int argc, char **argv)
         if(i <= 0) break;
 
     }
-
-    
     fclose(fd);
     fd = fopen(argv[2], "r");
     i = 1;
@@ -109,7 +108,11 @@ int main(int argc, char **argv)
         i = fread(&c, 1, 1, fd);
         j++;
     }
-    if(j < 5) return 0;
+
+    if(j < 5) {
+        fprintf(stderr, "Error: file is not the correct size.\n");
+        return 0;
+    }
 
     j = 0;
     k = 0;
@@ -134,10 +137,8 @@ int main(int argc, char **argv)
         k += pow(2, j) * (i % 2);
         i = i / 2;
     }
-
     fseek(fd, 0, SEEK_SET);
-
-    bit_buff = (char *) malloc(sizeof(char) * 10001);
+    
     m = 0;
     n = k;
     if(n % 8 != 0) j = (n / 8) + 1;
@@ -150,13 +151,19 @@ int main(int argc, char **argv)
         i = fread(&c, 1, 1, fd);
         if(i > 0) k++; 
     }
+    if(k - 4 != j) {
+        fprintf(stderr, "Error: file is not the correct size.\n");
+        return 0;
+    }
+    free(bit_buff);
+    bit_buff = (char *) malloc(j * 8);
 
-    if(k - 4 != j) return 0;
+    
     fseek(fd, 0, SEEK_SET);
-
     for(k = 0; k < j; k++){
         fread(&i, 1, 1, fd);
-        
+
+
         for(l = 0; l < 8; l++) {
             if(i % 2 == 0) bit_buff[m] = '0';
             else bit_buff[m] = '1';
@@ -175,7 +182,8 @@ int main(int argc, char **argv)
     */
     i = 0;
     hn = hn_root;
-    
+    //printf("%d\n", i);
+    //printf("%d\n", n);
     while(i < n) {
         if(hn->zero == NULL && bit_buff[i] == '0') {
 
@@ -200,7 +208,6 @@ int main(int argc, char **argv)
         i++;   
     }
     
-
     
     
     return 0;
