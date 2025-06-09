@@ -1,0 +1,7 @@
+lab 3 for the class. simply put this is a program that takes a Huffman code definition file, a file with a string of bits with the last 4 bytes the number of bits that should be read in and decodes 
+the string with the Huffman definition and prints it out. The input files are checked correct format and size in the program as well.
+
+complete description here https://web.eecs.utk.edu/~jplank/plank/classes/cs360/360/labs/Lab-3-Huffman/index.html
+
+compile: gcc -Wall -Wextra -o bin/huff_dec huff_dec.c -lm
+run: ./bin/huff_dec {Huffman code definition file} {input bitstream file}
