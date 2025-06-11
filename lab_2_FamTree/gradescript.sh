@@ -16,7 +16,7 @@ else
 fi
   
 program=bin/famtree
-correct_program=famtree
+correct_program=plank_sol_bin/famtree
   
 if [ ! -f $program ]; then
   echo "Problem $enum is incorrect."
