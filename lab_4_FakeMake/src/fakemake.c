@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,7 +14,10 @@ int main(int argc, char **argv)
     IS is;
     int i = 0, c_size = 0, h_size = 0, l_size = 0, f_size = 0;
     Dllist c, h, l, f, n;
-    char *e;
+    char *e, *o, *com;
+    struct stat o_buf;
+    struct stat c_buf;
+    struct stat h_buf;
     c = new_dllist();
     h = new_dllist();
     l = new_dllist();
@@ -69,12 +73,57 @@ int main(int argc, char **argv)
 
             
             printf("%d\n", c_size);
+            //now try to process the ages of the files to know if we need to recompile/ check the files exist
+
+
+
+            //do flags
+
+
+
+            //do .c files
+
             dll_traverse(n, c) {
-                printf("%s\n",n->val.s);   
+                if (stat(n->val.s, &c_buf) != 0) {
+                    fprintf(stderr, "No file found: %s\n", n->val.s);
+                    return 0;
+                }
+                else {
+                    i = strlen(n->val.s);
+                    o = (char *) malloc((i + 1) * sizeof(char));
+                    strcpy(o, n->val.s);
+                    o[i - 1] = 'o';
+                    if(stat(o, &o_buf) != 0) { //if there are no .o files make the call string and then call it.
+                        com = malloc((10 + strlen(n->val.s)));
+                        strcpy(com, "gcc -c -g ");
+                        strcpy(com + 10, n->val.s);
+                        if(system(com) != 0) {
+                            fprintf(stderr, "Problem compiling: %s\n", com);
+                            return 0;
+                        }
+                        else printf("%s\n", com);
+
+                    }
+                    else { //check if .c is more recent than .o, or if any of the .h files are more recent, recompile
+                        printf("found: %s\n", o);
+                        if(c_buf.st_mtime > o_buf.st_mtime) {
+                            com = malloc((10 + strlen(n->val.s)));
+                            strcpy(com, "gcc -c -g ");
+                            strcpy(com + 10, n->val.s);
+                            if(system(com) != 0) {
+                                fprintf(stderr, "Problem compiling: %s\n", com);
+                                return 0;
+                            }
+                            else printf("%s\n", com);
+                        }
+                    
+                    }
+                }
+                
             }
 
 
-            //now try to process the ages of the files to know if we need to recompile/ check the files exist
+            
             
         }
     }
