@@ -31,6 +31,6 @@ touch -t 01011100.25 testmain.o
 rm -f tf3.o
 rm -f tf4.o
 cp $ge/082.fm fmakefile
-if ./bin/fakemake; then
+if FAKEMAKE; then
   ./testexec
 fi
