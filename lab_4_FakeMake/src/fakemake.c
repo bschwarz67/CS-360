@@ -77,7 +77,15 @@ int main(int argc, char **argv)
             //now try to process the ages of the files to know if we need to recompile/ check the files exist
 
 
-
+            //do flags
+            flags = malloc(f_size * sizeof(char));
+            i = 0;
+            dll_traverse(n, f) {
+                strcpy(flags + i, n->val.s);
+                j = strlen(n->val.s);
+                strcpy(flags + i + j, " ");
+                i += (j + 1);
+            }
 
 
             //do .c files
@@ -93,32 +101,35 @@ int main(int argc, char **argv)
                     strcpy(o, n->val.s);
                     o[i - 1] = 'o';
                     if(stat(o, &o_buf) != 0) { //if there are no .o files make the call string and then call it.
-                        com = malloc((10 + strlen(n->val.s)));
-                        strcpy(com, "gcc -c -g ");
-                        strcpy(com + 10, n->val.s);
+                        com = malloc((7 + strlen(flags) + 1 + strlen(n->val.s)));
+                        strcpy(com, "gcc -c ");
+                        strcpy(com + 7, flags);
+                        strcpy(com + 7 + strlen(flags), " ");
+                        strcpy(com + 7 + strlen(flags) + 1, n->val.s);
+                        printf("%s\n", com);
                         if(system(com) != 0) {
                             fprintf(stderr, "Problem compiling: %s\n", com);
                             return 0;
                         }
                         else {
-                            printf("%s\n", com);
                             k = 1;
 
                         }
 
                     }
                     else { //check if .c is more recent than .o, or if any of the .h files are more recent, recompile
-                        printf("found: %s\n", o);
                         if(c_buf.st_mtime > o_buf.st_mtime) {
-                            com = malloc((10 + strlen(n->val.s)));
-                            strcpy(com, "gcc -c -g ");
-                            strcpy(com + 10, n->val.s);
+                            com = malloc((7 + strlen(flags) + 1 + strlen(n->val.s)));
+                            strcpy(com, "gcc -c ");
+                            strcpy(com + 7, flags);
+                            strcpy(com + 7 + strlen(flags), " ");
+                            strcpy(com + 7 + strlen(flags) + 1, n->val.s);
+                            printf("%s\n", com);
                             if(system(com) != 0) {
                                 fprintf(stderr, "Problem compiling: %s\n", com);
                                 return 0;
                             }
                             else {
-                                printf("%s\n", com);
                                 k = 1;
                             }
                         }
@@ -131,15 +142,17 @@ int main(int argc, char **argv)
                                 else {
                                     //printf("%d %d\n",h_buf.st_mtime,o_buf.st_mtime);
                                     if(h_buf.st_mtime > o_buf.st_mtime) {
-                                        com = malloc((10 + strlen(n->val.s)));
-                                        strcpy(com, "gcc -c -g ");
-                                        strcpy(com + 10, n->val.s);
+                                        com = malloc((7 + strlen(flags) + 1 + strlen(n->val.s)));
+                                        strcpy(com, "gcc -c ");
+                                        strcpy(com + 7, flags);
+                                        strcpy(com + 7 + strlen(flags), " ");
+                                        strcpy(com + 7 + strlen(flags) + 1, n->val.s);
+                                        printf("%s\n", com);
                                         if(system(com) != 0) {
                                             fprintf(stderr, "Problem compiling: %s\n", com);
                                             return 0;
                                         }
                                         else {
-                                            printf("%s\n", com);
                                             k = 1;
                                             break;
                                         }
@@ -164,25 +177,14 @@ int main(int argc, char **argv)
                 strcpy(libs + i + j, " ");
                 i += (j + 1);
             }
-            printf("libs: %s\n", libs);
 
-            //do flags
-            flags = malloc(f_size * sizeof(char));
-            i = 0;
-            dll_traverse(n, f) {
-                strcpy(flags + i, n->val.s);
-                j = strlen(n->val.s);
-                strcpy(flags + i + j, " ");
-                i += (j + 1);
-            }
-            printf("flags: %s\n", flags);
 
             //do .o files compiled to executable
             if(k == 1) {
                 i = 0;
-                com = malloc((10 + strlen(e) + 1 + f_size + 1 + o_size + 1 + l_size + 1) * sizeof(char));
-                strcpy(com + i, "gcc -g -o ");
-                i += 10;
+                com = malloc((7 + strlen(e) + 1 + f_size + 1 + o_size + 1 + l_size + 1) * sizeof(char));
+                strcpy(com + i, "gcc -o ");
+                i += 7;
                 strcpy(com + i, e);
                 i += strlen(e);
                 strcpy(com + i, " ");
@@ -198,12 +200,10 @@ int main(int argc, char **argv)
                     i += (j + 1);
                 }
                 strcpy(com + i, libs);
+                printf("%s\n", com);
                 if(system(com) != 0) {
                     fprintf(stderr, "Problem compiling: %s\n", com);
                     return 0;
-                }
-                else {
-                    printf("%s\n", com);
                 }
             }
             else {
@@ -218,5 +218,5 @@ int main(int argc, char **argv)
     
 
 
-  return 1;
+  return 0;
 }
