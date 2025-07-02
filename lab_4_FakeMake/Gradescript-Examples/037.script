@@ -33,6 +33,6 @@ touch -t 01011105.50 tf4.c
 touch -t 01011106.35 testexec
 touch -t 01011100.20 testexec
 cp $ge/037.fm fmakefile
-if ./bin/plank_fakemake ; then
+if FAKEMAKE ; then
   ./testexec
 fi

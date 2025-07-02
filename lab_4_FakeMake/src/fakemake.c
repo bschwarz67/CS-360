@@ -69,7 +69,7 @@ int main(int argc, char **argv)
                     }
                     else {
                         fprintf(stderr, "Error: Invalid line descriptor.\n");
-                        return 0;
+                        return 1;
                     }
                 } 
             }
@@ -94,7 +94,7 @@ int main(int argc, char **argv)
             dll_traverse(n, c) {
                 if (stat(n->val.s, &c_buf) != 0) {
                     fprintf(stderr, "No file found: %s\n", n->val.s);
-                    return 0;
+                    return 1;
                 }
                 else {
                     i = strlen(n->val.s);
@@ -108,8 +108,8 @@ int main(int argc, char **argv)
                         strcpy(com + 7 + strlen(flags), n->val.s);
                         printf("%s\n", com);
                         if(system(com) != 0) {
-                            fprintf(stderr, "Problem compiling: %s\n", com);
-                            return 0;
+                            fprintf(stderr, "Command failed.  Exiting\n");
+                            return 1;
                         }
                         else {
                             k = 1;
@@ -125,8 +125,8 @@ int main(int argc, char **argv)
                             strcpy(com + 7 + strlen(flags), n->val.s);
                             printf("%s\n", com);
                             if(system(com) != 0) {
-                                fprintf(stderr, "Problem compiling: %s\n", com);
-                                return 0;
+                                fprintf(stderr, "Command failed.  Exiting\n");
+                                return 1;
                             }
                             else {
                                 k = 1;
@@ -136,7 +136,7 @@ int main(int argc, char **argv)
                             dll_traverse(m, h) {
                                 if (stat(m->val.s, &h_buf) != 0) {
                                     fprintf(stderr, "No file found: %s\n", m->val.s);
-                                    return 0;
+                                    return 1;
                                 }
                                 else {
                                     //printf("%d %d\n",h_buf.st_mtime,o_buf.st_mtime);
@@ -147,8 +147,8 @@ int main(int argc, char **argv)
                                         strcpy(com + 7 + strlen(flags), n->val.s);
                                         printf("%s\n", com);
                                         if(system(com) != 0) {
-                                            fprintf(stderr, "Problem compiling: %s\n", com);
-                                            return 0;
+                                            fprintf(stderr, "Command failed.  Exiting\n");
+                                            return 1;
                                         }
                                         else {
                                             k = 1;
@@ -206,18 +206,18 @@ int main(int argc, char **argv)
                 strcpy(com + i, libs);
                 printf("%s\n", com);
                 if(system(com) != 0) {
-                    fprintf(stderr, "Problem compiling: %s\n", com);
-                    return 0;
+                    fprintf(stderr, "Command failed.  Exiting\n");
+                    return 1;
                 }
             }
             else {
-                printf("Nothing to do.\n");
+                printf("testexec up to date\n");
             }
         }
     }
     else {
         fprintf(stderr, "Usage: fakemake [ description-file ].\n");
-        return 0;
+        return 1;
     }
     
 
