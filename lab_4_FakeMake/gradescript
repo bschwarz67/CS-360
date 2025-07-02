@@ -15,7 +15,7 @@ else
   exit 1
 fi
   
-program=fakemake
+program=./bin/fakemake
 
 if [ ! -f $program ]; then
   echo "Problem $enum is incorrect."
@@ -29,12 +29,12 @@ fi
 scriptfile=$ge/$enum.script
 
 fakemake=$dir/bin/plank_fakemake
-sed "s#FAKEMAKE#$fakemake#" $scriptfile > correct-script.sh
+sed "s#FAKEMAKE#./bin/plank_fakemake#" $scriptfile > correct-script.sh
 sh correct-script.sh > tmp-$enum-correct-stdout.txt 2> tmp-$enum-correct-stderr.txt
 correct="sh correct-script.sh > tmp-$enum-correct-stdout.txt 2> tmp-$enum-correct-stderr.txt"
 
 fakemake=./bin/fakemake
-sed "s#FAKEMAKE#$fakemake#" $scriptfile > your-script.sh
+sed "s#FAKEMAKE#./bin/fakemake#" $scriptfile > your-script.sh
 sh your-script.sh > tmp-$enum-test-stdout.txt 2> tmp-$enum-test-stderr.txt
 call="sh your-script.sh > tmp-$enum-test-stdout.txt 2> tmp-$enum-test-stderr.txt"
 

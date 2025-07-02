@@ -12,7 +12,7 @@
 int main(int argc, char **argv)
 {
     IS is;
-    int i = 0, j = 0, k = 0, c_size = 0, h_size = 0, l_size = 0, f_size = 0, o_size = 0;
+    int i = 0, j = 0, k = 0, libs_len = 0, p = 0, c_size = 0, h_size = 0, l_size = 0, f_size = 0, o_size = 0;
     Dllist c, h, l, f, n, m, o_list;
     char *e, *o, *com, *libs, *flags;
     struct stat o_buf;
@@ -54,6 +54,7 @@ int main(int argc, char **argv)
                         for (i = 1; i < is->NF; i++) {
                             dll_append(l, new_jval_s(strdup(is->fields[i])));
                             l_size += (strlen(is->fields[i])+1);
+                            libs_len += (is->NF - 1);
                         }
                     }
                     else if(strcmp(is->fields[0], "F") == 0) { 
@@ -101,11 +102,10 @@ int main(int argc, char **argv)
                     strcpy(o, n->val.s);
                     o[i - 1] = 'o';
                     if(stat(o, &o_buf) != 0) { //if there are no .o files make the call string and then call it.
-                        com = malloc((7 + strlen(flags) + 1 + strlen(n->val.s)));
+                        com = malloc((7 + strlen(flags) + strlen(n->val.s)));
                         strcpy(com, "gcc -c ");
                         strcpy(com + 7, flags);
-                        strcpy(com + 7 + strlen(flags), " ");
-                        strcpy(com + 7 + strlen(flags) + 1, n->val.s);
+                        strcpy(com + 7 + strlen(flags), n->val.s);
                         printf("%s\n", com);
                         if(system(com) != 0) {
                             fprintf(stderr, "Problem compiling: %s\n", com);
@@ -119,11 +119,10 @@ int main(int argc, char **argv)
                     }
                     else { //check if .c is more recent than .o, or if any of the .h files are more recent, recompile
                         if(c_buf.st_mtime > o_buf.st_mtime) {
-                            com = malloc((7 + strlen(flags) + 1 + strlen(n->val.s)));
+                            com = malloc((7 + strlen(flags) + strlen(n->val.s)));
                             strcpy(com, "gcc -c ");
                             strcpy(com + 7, flags);
-                            strcpy(com + 7 + strlen(flags), " ");
-                            strcpy(com + 7 + strlen(flags) + 1, n->val.s);
+                            strcpy(com + 7 + strlen(flags), n->val.s);
                             printf("%s\n", com);
                             if(system(com) != 0) {
                                 fprintf(stderr, "Problem compiling: %s\n", com);
@@ -142,11 +141,10 @@ int main(int argc, char **argv)
                                 else {
                                     //printf("%d %d\n",h_buf.st_mtime,o_buf.st_mtime);
                                     if(h_buf.st_mtime > o_buf.st_mtime) {
-                                        com = malloc((7 + strlen(flags) + 1 + strlen(n->val.s)));
+                                        com = malloc((7 + strlen(flags) + strlen(n->val.s)));
                                         strcpy(com, "gcc -c ");
                                         strcpy(com + 7, flags);
-                                        strcpy(com + 7 + strlen(flags), " ");
-                                        strcpy(com + 7 + strlen(flags) + 1, n->val.s);
+                                        strcpy(com + 7 + strlen(flags), n->val.s);
                                         printf("%s\n", com);
                                         if(system(com) != 0) {
                                             fprintf(stderr, "Problem compiling: %s\n", com);
@@ -172,10 +170,16 @@ int main(int argc, char **argv)
             i = 0;
             dll_traverse(n, l) {
                 
+                p++;
                 strcpy(libs + i, n->val.s);
                 j = strlen(n->val.s);
-                strcpy(libs + i + j, " ");
-                i += (j + 1);
+                if(p == libs_len) {
+                    i += j;
+                }
+                else {
+                    strcpy(libs + i + j, " ");
+                    i += (j + 1); 
+                }
             }
 
 
