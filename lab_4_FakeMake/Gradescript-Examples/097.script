@@ -31,6 +31,6 @@ gcc -o testexec testmain.c tf1.c tf2.c tf3.c tf4.c tf0.c -lm
 touch -t 01011104.35 testexec
 rm -f tf4.o
 cp $ge/097.fm fmakefile
-if ./bin/plank_fakemake; then
+if FAKEMAKE; then
   ./testexec
 fi

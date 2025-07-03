@@ -1,3 +1,4 @@
+//TODO check for .c files being more recently compiled in relation to exec as well as more recently edited (not the same thing, planks script edits them as well as compile)
 #include <stdio.h>
 #include <fcntl.h>
 #include <sys/types.h>
@@ -12,7 +13,7 @@
 int main(int argc, char **argv)
 {
     IS is;
-    int i = 0, j = 0, k = 0, libs_len = 0, p = 0, c_size = 0, h_size = 0, l_size = 0, f_size = 0, o_size = 0;
+    int i = 0, j = 0, k = 0, libs_len = 0, o_len = 0, p = 0, c_size = 0, h_size = 0, l_size = 0, f_size = 0, o_size = 0;
     Dllist c, h, l, f, n, m, o_list;
     char *e, *o, *com, *libs, *flags;
     struct stat o_buf;
@@ -20,6 +21,7 @@ int main(int argc, char **argv)
     struct stat h_buf;
     struct stat l_buf;
     struct stat f_buf;
+    struct stat e_buf;
     c = new_dllist();
     h = new_dllist();
     l = new_dllist();
@@ -32,8 +34,7 @@ int main(int argc, char **argv)
         if(argc == 1) is = new_inputstruct("fmakefile");
         else is = new_inputstruct(argv[1]);
         if (is == NULL) {
-            fprintf(stderr, "Error: Unable to open file.\n");
-            return 0;
+            return 1;
         } 
         else {
             while (get_line(is) >= 0) { //read in the fakemakefile and process the lines
@@ -54,7 +55,7 @@ int main(int argc, char **argv)
                         for (i = 1; i < is->NF; i++) {
                             dll_append(l, new_jval_s(strdup(is->fields[i])));
                             l_size += (strlen(is->fields[i])+1);
-                            libs_len += (is->NF - 1);
+                            libs_len += 1;
                         }
                     }
                     else if(strcmp(is->fields[0], "F") == 0) { 
@@ -77,7 +78,7 @@ int main(int argc, char **argv)
             
             //now try to process the ages of the files to know if we need to recompile/ check the files exist
 
-
+            
             //do flags
             flags = malloc(f_size * sizeof(char));
             i = 0;
@@ -85,7 +86,7 @@ int main(int argc, char **argv)
                 strcpy(flags + i, n->val.s);
                 j = strlen(n->val.s);
                 strcpy(flags + i + j, " ");
-                i += (j + 1);
+                i += (j + 1); 
             }
 
 
@@ -161,6 +162,7 @@ int main(int argc, char **argv)
                     }
                     dll_append(o_list, new_jval_s(strdup(o)));
                     o_size += (strlen(o) + 1);
+                    o_len += 1;
                 } 
             }
 
@@ -168,6 +170,7 @@ int main(int argc, char **argv)
             //do libraries
             libs = malloc(l_size * sizeof(char));
             i = 0;
+            p = 0;
             dll_traverse(n, l) {
                 
                 p++;
@@ -181,6 +184,26 @@ int main(int argc, char **argv)
                     i += (j + 1); 
                 }
             }
+            i = 0;
+            if (stat(e, &e_buf) != 0) k = 1;
+            else {
+                dll_traverse(n, o_list) {
+                    if (stat(n->val.s, &o_buf) != 0) {
+                        fprintf(stderr, "No file found: %s\n", n->val.s);
+                        return 1;
+                    }
+                    else {
+                        if(o_buf.st_mtime > e_buf.st_mtime) {
+                            k = 1;
+                            break;
+                        }
+                    }
+                }
+
+            }
+
+
+            
 
 
             //do .o files compiled to executable
@@ -196,17 +219,26 @@ int main(int argc, char **argv)
                 strcpy(com + i, flags);
                 i += f_size;
 
-
+                p = 0;
                 dll_traverse(n, o_list) {
+                    p++;
                     strcpy(com + i, n->val.s);
                     j = strlen(n->val.s);
-                    strcpy(com + i + j, " ");
-                    i += (j + 1);
+                    if(p == o_len) {
+                        i += j;
+                    }
+                    else {
+                        strcpy(com + i + j, " ");
+                        i += (j + 1); 
+                    }
                 }
-                strcpy(com + i, libs);
+                if(strlen(libs) > 0) {
+                    strcpy(com + i, " ");
+                    strcpy(com + i + 1, libs);
+                }
                 printf("%s\n", com);
                 if(system(com) != 0) {
-                    fprintf(stderr, "Command failed.  Exiting\n");
+                    fprintf(stderr, "Command failed.  Fakemake exiting\n");
                     return 1;
                 }
             }
