@@ -35,6 +35,6 @@ touch -t 01011101.25 tf0.o
 rm -f tf3.o
 rm -f tf4.o
 cp $ge/075.fm fmakefile
-if ./bin/plank_fakemake; then
+if FAKEMAKE; then
   ./testexec
 fi

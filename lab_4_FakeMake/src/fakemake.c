@@ -15,7 +15,7 @@ int main(int argc, char **argv)
     IS is;
     int i = 0, j = 0, k = 0, libs_len = 0, o_len = 0, p = 0, c_size = 0, h_size = 0, l_size = 0, f_size = 0, o_size = 0;
     Dllist c, h, l, f, n, m, o_list;
-    char *e, *o, *com, *libs, *flags;
+    char *e, *o, *com, *libs, *flags, *make_name;
     struct stat o_buf;
     struct stat c_buf;
     struct stat h_buf;
@@ -31,13 +31,24 @@ int main(int argc, char **argv)
     
     if(argc == 1 || argc == 2) {
 
-        if(argc == 1) is = new_inputstruct("fmakefile");
-        else is = new_inputstruct(argv[1]);
+        if(argc == 1) {
+            make_name = malloc(10 * sizeof(char));
+            strcpy(make_name, "fmakefile");
+        }
+        else {
+            make_name = malloc(strlen(argv[1]) * sizeof(char));
+            strcpy(make_name, argv[1]);
+        }
+
+        is = new_inputstruct(make_name);
         if (is == NULL) {
             return 1;
         } 
         else {
+            j = 0;
+            k = 0;
             while (get_line(is) >= 0) { //read in the fakemakefile and process the lines
+                k++;
                 if(is->NF > 0) { //none blank lines
                     if(strcmp(is->fields[0], "C") == 0) { //if the line starts with 'C' we put c file names into a list and keep track of the size a concatenated string would have
                         for (i = 1; i < is->NF; i++) {
@@ -67,6 +78,12 @@ int main(int argc, char **argv)
                     else if(strcmp(is->fields[0], "E") == 0) { //save the name of the executable
                         e = (char*) malloc((strlen(is->fields[1]) + 1) * sizeof(char));
                         strcpy(e, is->fields[1]);
+                        j++;
+                        if(j > 1) {
+                            fprintf(stderr, "fmakefile (%d) cannot have more than one E line\n", k);
+                            return 1;
+                        }
+                        
                     }
                     else {
                         fprintf(stderr, "Error: Invalid line descriptor.\n");
@@ -74,6 +91,9 @@ int main(int argc, char **argv)
                     }
                 } 
             }
+            j = 0;
+            k = 0;
+
 
             
             //now try to process the ages of the files to know if we need to recompile/ check the files exist
