@@ -33,6 +33,6 @@ rm -f testmain.o
 touch -t 01011102.25 tf1.o
 touch -t 01011103.25 tf2.o
 rm -f tf3.o
-if ./bin/fakemake $ge/083.fm; then
+if FAKEMAKE $ge/083.fm; then
   ./testexec
 fi
