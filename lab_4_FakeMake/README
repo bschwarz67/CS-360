@@ -1,0 +1,6 @@
+lab 4. full description here: http://web.eecs.utk.edu/~jplank/plank/classes/cs360/360/labs/Lab-4-Fakemake/
+
+In general, that is an immitation 'make' program that takes a simplified makefile, parses and checks for formatting, then does linking, compilation.
+
+to compile: make
+to test w gradescript: ./gradescript (1-100... a few examples are probably missing in the directory, can be got from the lab page)
