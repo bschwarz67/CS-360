@@ -91,6 +91,10 @@ int main(int argc, char **argv)
                     }
                 } 
             }
+            if(j == 0) {
+                fprintf(stderr,"No executable specified\n");
+                return 1;
+            }
             j = 0;
             k = 0;
 
@@ -114,7 +118,7 @@ int main(int argc, char **argv)
 
             dll_traverse(n, c) {
                 if (stat(n->val.s, &c_buf) != 0) {
-                    fprintf(stderr, "No file found: %s\n", n->val.s);
+                    fprintf(stderr,"fmakefile: %s: No such file or directory\n", n->val.s);
                     return 1;
                 }
                 else {
@@ -156,7 +160,7 @@ int main(int argc, char **argv)
                         else {
                             dll_traverse(m, h) {
                                 if (stat(m->val.s, &h_buf) != 0) {
-                                    fprintf(stderr, "No file found: %s\n", m->val.s);
+                                    fprintf(stderr,"fmakefile: %s: No such file or directory\n", m->val.s);
                                     return 1;
                                 }
                                 else {
@@ -209,7 +213,7 @@ int main(int argc, char **argv)
             else {
                 dll_traverse(n, o_list) {
                     if (stat(n->val.s, &o_buf) != 0) {
-                        fprintf(stderr, "No file found: %s\n", n->val.s);
+                        fprintf(stderr,"fmakefile: %s: No such file or directory\n", n->val.s);
                         return 1;
                     }
                     else {
@@ -263,7 +267,7 @@ int main(int argc, char **argv)
                 }
             }
             else {
-                printf("testexec up to date\n");
+                printf("%s up to date\n",e);
             }
         }
     }

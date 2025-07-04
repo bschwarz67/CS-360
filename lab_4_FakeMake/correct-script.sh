@@ -2,12 +2,11 @@ ge=/home/bryan/Desktop/PersonalCodeRepo/CS-360/lab_4_FakeMake/Gradescript-Exampl
 rm -f testmain.c tf1.c tf2.c tf3.c tf4.c tf0.c s1_header.h s2_header.h
 rm -f testmain.o tf1.o tf2.o tf3.o tf4.o tf0.o testexec testlib.a
 cp $ge/britney-does-math.c testmain.c
-sed 's/first/first/' $ge/oneline-1.c > tf0.c
-sed 's/first/second/' $ge/oneline-2.c > tf1.c
-sed 's/first/third/' $ge/using_s2.c > tf2.c
-cp $ge/s2_header-2.h s2_header.h
-sed 's/first/fourth/' $ge/using_s1.c > tf3.c
-cp $ge/s1_header-2.h s1_header.h
+sed 's/first/first/' $ge/oneline-3.c > tf0.c
+sed 's/first/second/' $ge/using_s2.c > tf1.c
+cp $ge/s2_header-1.h s2_header.h
+sed 's/first/third/' $ge/oneline-1.c > tf2.c
+sed 's/first/fourth/' $ge/oneline-5.c > tf3.c
 sed 's/first/fifth/' $ge/oneline-4.c > tf4.c
 gcc -c testmain.c
 touch -t 01011100.30 testmain.c
@@ -28,13 +27,9 @@ gcc -c tf4.c
 touch -t 01011105.30 tf4.c
 touch -t 01011105.35 tf4.o
 touch -t 01011000.30 s2_header.h
-touch -t 01011001.30 s1_header.h
 gcc -o testexec testmain.c tf1.c tf2.c tf3.c tf4.c tf0.c -lm
 touch -t 01011106.35 testexec
-touch -t 01011101.25 tf0.o
-rm -f tf3.o
-rm -f tf4.o
-cp $ge/075.fm fmakefile
-if ./bin/plank_fakemake; then
+touch -t 01011104.25 tf3.o
+if ./bin/plank_fakemake $ge/094.fm; then
   ./testexec
 fi

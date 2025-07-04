@@ -30,6 +30,6 @@ touch -t 01011000.30 s2_header.h
 gcc -o testexec testmain.c tf1.c tf2.c tf3.c tf4.c tf0.c -lm
 touch -t 01011106.35 testexec
 touch -t 01011104.25 tf3.o
-if ./bin/fakemake $ge/094.fm; then
+if FAKEMAKE $ge/094.fm; then
   ./testexec
 fi
