@@ -23,11 +23,13 @@ void tarc(const char *fn, JRB inodes)
   long total_size;          /* The total size of all files. */
 
   int fn_size;              /* This is the length of fn -- so we can build the filename. */
-  char *dir_fn;             /* This will be the filename including the directory. */
+  char *dir_fn;
   int dir_fn_size;          /* This is the bytes in dir_fn is, in case we need to make it bigger. */
   int sz;
+  int bytes_int, i;
 
   Dllist directories, tmp;  /* Dllist of directory names, for doing recusion after closing. */
+
 
   /* Initialize */
 
@@ -50,6 +52,16 @@ void tarc(const char *fn, JRB inodes)
   if (dir_fn == NULL) { perror("malloc dir_fn"); exit(1); }
   strcpy(dir_fn, fn);
   strcat(dir_fn + fn_size, "/");
+
+  /*output for the directory itself*/
+
+  /*The size of the file's name, as a four-byte integer in little endian.*/
+  bytes_int = strlen(dir_fn) - 1;
+  fwrite(&bytes_int, 1, 4, stdout);
+
+  /*The file's name. No null character. */
+
+
 
   /* Run through the directory and run stat() on each file,  */
 
@@ -76,20 +88,23 @@ void tarc(const char *fn, JRB inodes)
 
     if (!S_ISLNK(buf.st_mode) && strcmp(de->d_name, ".") != 0 && strcmp(de->d_name, "..") != 0) {
     
-
-        /*add extra informtion if this inode hasnt been encountered before*/
-        if (jrb_find_gen(inodes, new_jval_l(buf.st_ino), compare) == NULL) {
-
-            jrb_insert_gen(inodes, new_jval_l(buf.st_ino), new_jval_i(0), compare);
-            printf("%s\n", dir_fn);
-        }
-
-
-        /* Don't make the recursive call, but instead put the directory into the dllist. */
+        /* Don't make the recursive call, dont output anything about the directory because it will be in next recursive call,
+         but instead put the directory into the dllist. */
 
         if (S_ISDIR(buf.st_mode)) {
-        dll_append(directories, new_jval_s(strdup(dir_fn)));
+            dll_append(directories, new_jval_s(strdup(dir_fn)));
         }
+
+        else {
+
+            /*add extra informtion if this inode hasnt been encountered before*/
+            if (jrb_find_gen(inodes, new_jval_l(buf.st_ino), compare) == NULL) {
+
+                jrb_insert_gen(inodes, new_jval_l(buf.st_ino), new_jval_i(0), compare);
+            }
+        }
+
+
     }
   }
 
@@ -141,10 +156,6 @@ int main(int argc, char **argv){
             k++;
         }
         fn[k] = '\0';
-        printf("%s\n", fn);
-        i = 1000;
-        sprintf(bytes, "%08lx", i);
-        printf("%s\n",bytes);
         sprintf(cd, "cd %s/..", argv[1]);
         system(cd);
         tarc(fn, inodes);
