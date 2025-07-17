@@ -14,7 +14,7 @@ int compare(Jval v1, Jval v2)
   return 0;
 }
 
-void tarc(const char *fn, JRB inodes, int flag)
+void tarc(const char *fn, JRB inodes, int flag, int index)
 {
     DIR *d;                   /* Return value of opendir(). */
     struct dirent *de;        /* Return value of each readdir() call. */
@@ -23,11 +23,12 @@ void tarc(const char *fn, JRB inodes, int flag)
     long total_size;          /* The total size of all files. */
 
     int fn_size;              /* This is the length of fn -- so we can build the filename. */
-    char *dir_fn, c;
+    char *dir_fn, c, *dir;
     int dir_fn_size;          /* This is the bytes in dir_fn is, in case we need to make it bigger. */
-    int sz;
+    int sz, dir_size;
     int len;
     FILE *fd;
+    int i;
 
     Dllist directories, tmp;  /* Dllist of directory names, for doing recusion after closing. */
 
@@ -40,6 +41,48 @@ void tarc(const char *fn, JRB inodes, int flag)
         exit(1);
     }
     directories = new_dllist();
+
+
+    /*output for the directory itself first time called*/
+    
+    if(flag == 0) {
+        exists = lstat(fn, &buf);
+        if (exists < 0) {
+            fprintf(stderr, "%s not found\n", fn);
+        } 
+        else {
+            if(index >= 0) {
+                dir_size = strlen(fn) - index + 1;
+                dir = (char *) malloc(dir_size * sizeof(char));
+                for (i = index; i < strlen(fn); i++) {
+                    dir[i - index] = fn[i];
+                }
+                dir[i-index] = '\0';
+            }
+            else {
+
+                dir_size = strlen(fn) + 1;
+                dir = (char *) malloc(dir_size * sizeof(char));
+                for(i = 0; i < dir_size; i++) {
+                    dir[i] = fn[i];
+                }
+                dir[i] = '\0';
+            }
+            len = strlen(dir);
+            /*The size of the file's name, as a four-byte integer in little endian.*/
+            fwrite(&len, 1, 4, stdout);
+            /*The file's name. No null character. */
+            fwrite(dir, 1, len, stdout);
+            /*The file's inode, as an eight byte long in little endian*/
+            fwrite(&buf.st_ino, 1, 8, stdout);
+            /*The file's mode, as a four byte integer in little endian. */
+            fwrite(&buf.st_mode, 1, 4, stdout);
+            /*The file's last modification time, in seconds, as an eight byte long in little endian*/
+            fwrite(&buf.st_mtime, 1, 8, stdout);
+            free(dir);
+
+        }
+    }
 
   /* Start building the directory + files.   We'll start by setting dir_fn_size to fn_size+10,
      and we'll make it bigger as we need to.  It will be more efficient to use a number bigger
@@ -54,27 +97,6 @@ void tarc(const char *fn, JRB inodes, int flag)
     strcpy(dir_fn, fn);
     strcat(dir_fn + fn_size, "/");
 
-    /*output for the directory itself*/
-    
-    if(flag == 0) {
-        exists = lstat(fn, &buf);
-        if (exists < 0) {
-            fprintf(stderr, "%s not found\n", fn);
-        } else {
-            /*The size of the file's name, as a four-byte integer in little endian.*/
-            fwrite(&fn_size, 1, 4, stdout);
-            /*The file's name. No null character. */
-            fwrite(fn, 1, fn_size, stdout);
-            /*The file's inode, as an eight byte long in little endian*/
-            fwrite(&buf.st_ino, 1, 8, stdout);
-            /*The file's mode, as a four byte integer in little endian. */
-            fwrite(&buf.st_mode, 1, 4, stdout);
-            /*The file's last modification time, in seconds, as an eight byte long in little endian*/
-            fwrite(&buf.st_mtime, 1, 8, stdout);
-
-        }
-    }
-    
 
 
   /* Run through the directory and run stat() on each file,  */
@@ -98,6 +120,23 @@ void tarc(const char *fn, JRB inodes, int flag)
       exit(1);
     } 
 
+    if(index >= 0) {
+        dir_size = strlen(dir_fn) - index + 1;
+        dir = (char *) malloc(dir_size * sizeof(char));
+        for (i = index; i < strlen(dir_fn); i++) {
+            dir[i - index] = dir_fn[i];
+        }
+        dir[i-index] = '\0';
+    }
+    else {
+        dir_size = strlen(dir_fn) + 1;
+        dir = (char *) malloc(dir_size * sizeof(char));
+        for(i = 0; i < dir_size; i++) {
+            dir[i] = dir_fn[i];
+        }
+        dir[i] = '\0';
+    }
+
     /* Make sure this file isnt a symbolic link and that it isnt a . or .. directory */
 
     if (!S_ISLNK(buf.st_mode) && strcmp(de->d_name, ".") != 0 && strcmp(de->d_name, "..") != 0) {
@@ -108,10 +147,10 @@ void tarc(const char *fn, JRB inodes, int flag)
         if (S_ISDIR(buf.st_mode)) {
             dll_append(directories, new_jval_s(strdup(dir_fn)));
             /*The size of the file's name, as a four-byte integer in little endian.*/
-            len = strlen(dir_fn);
+            len = strlen(dir);
             fwrite(&len, 1, 4, stdout);
             /*The file's name. No null character. */
-            fwrite(dir_fn, 1, len, stdout);
+            fwrite(dir, 1, len, stdout);
             /*The file's inode, as an eight byte long in little endian*/
             fwrite(&buf.st_ino, 1, 8, stdout);
             /*The file's mode, as a four byte integer in little endian. */
@@ -122,10 +161,10 @@ void tarc(const char *fn, JRB inodes, int flag)
 
         else {
             /*The size of the file's name, as a four-byte integer in little endian.*/
-            len = strlen(dir_fn);
+            len = strlen(dir);
             fwrite(&len, 1, 4, stdout);
             /*The file's name. No null character. */
-            fwrite(dir_fn, 1, len, stdout);
+            fwrite(dir, 1, len, stdout);
             /*The file's inode, as an eight byte long in little endian*/
             fwrite(&buf.st_ino, 1, 8, stdout);
             /*extra file information goes here*/
@@ -157,7 +196,7 @@ void tarc(const char *fn, JRB inodes, int flag)
   closedir(d);
 
   dll_traverse(tmp, directories) {
-    tarc(tmp->val.s, inodes, 1);
+    tarc(tmp->val.s, inodes, 1, index);
   }
 
   /* Clean up.  You need to free the strings inside the dllist, because you
@@ -171,11 +210,10 @@ void tarc(const char *fn, JRB inodes, int flag)
 }
 
 int main(int argc, char **argv){
-
     char *fn = NULL;
     char *bytes;
     char *cd;
-    int i = 1, j = 0, k = 0;
+    int i = 0, j = -1, k = 0;
     JRB inodes;
 
     inodes = make_jrb();
@@ -183,29 +221,12 @@ int main(int argc, char **argv){
         fprintf(stderr, "usage: bin/tarc {directory} > {[].tarc})\n");
         return 1;
     }
-    for(j = strlen(argv[1]) - 1; j >= 0; j--) {
-        if(argv[1][j] == '/') {
-            i = 0;
-            break;
-        }
-    }
 
-    if(!i) {
-        j++;
-        i = strlen(argv[1]) - j;
-        fn = malloc((i + 1) * sizeof(char));
-        i = strlen(argv[1]) - 1;
-        for(j; j <= i; j++) {
-            fn[k] = argv[1][j];
-            k++;
+    for(i; i < strlen(argv[1]); i++) {
+        if(argv[1][i] == '/') {
+            j = i;
         }
-        fn[k] = '\0';
-        sprintf(cd, "cd %s/..", argv[1]);
-        system(cd);
-        tarc(fn, inodes, 0);
     }
-    else {
-        tarc(argv[1], inodes, 0);
-    }
+    tarc(argv[1], inodes, 0, j + 1);
 
 }
