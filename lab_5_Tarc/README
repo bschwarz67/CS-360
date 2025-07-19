@@ -1,0 +1,21 @@
+lab 5 is a simple implementation of tar, which condenses all the information needed to recreate a directory and its contents, including subdirectories, in a file. The specifics can be found in:
+https://web.eecs.utk.edu/~jplank/plank/classes/cs360/360/labs/Lab-5-Tarc/index.html. I was unable to find the example directories to validate
+with the gradescript on the lab page, however I created several large, complex directories with bin/mrd and the gradescript grades them as correct.
+
+to run
+
+./bin/tarc {directory} > {output file} 
+The directory should be named, not be a relative name .. or .
+
+to run gradescript ./gradescript {1-100} 
+you have to put a directory {001 - 100} in Gradescript-Examples, probably with some contents if you want the program to be useful. you can do this with:
+usage: mrd seed dir-level fpd randprot(n|y|d) linkperc stem
+
+The arguments are:
+
+    seed for srand48(). Yes, it's a bad RNG, but it's fine for this purpose.
+    dir-level: this is the maximum number of nested subdirectories. They will always be a chain of directories of length dir-level. There may be more than one.
+    fpd: Maximum files per directory.
+    randprot: If 'y', set the protection bits of files randomly. The "user read" bit and the "world read" will always be set. If 'd', also set the protection bits of directories randomly. The "user/world read" and "user/world execute" bits will always be set.
+    linkperc the percentage of times that the program will create hard links to existing files rather than new files.
+    stem this is the directory into which to put the files. 
