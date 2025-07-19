@@ -187,8 +187,8 @@ void tarc(const char *fn, JRB inodes, int flag, int index)
             }   
         }
 
-
     }
+    free(dir);
   }
 
   /* Make the recursive calls after you've closed the directory.  */
