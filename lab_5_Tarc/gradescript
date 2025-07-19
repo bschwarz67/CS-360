@@ -30,9 +30,14 @@ rm -f tmp-$enum-your-stderr.txt tmp-$enum-your-stdout.txt tmp-$enum-your-tarfile
 
 testdir=$ge/$enum
 
-csh -c "limit descriptors 10 ; $dir/$plank_program $testdir > tmp-$enum-correct-tarfile.txt" 2>tmp-$enum-correct-stderr.txt
-csh -c "limit descriptors 10 ; $dir/$program $testdir > tmp-$enum-your-tarfile.txt" 2>tmp-$enum-your-stderr.txt
-call="csh -c \"limit descriptors 10 ; $dir/$program $testdir > tmp-$enum-your-tarfile.txt\""
+#csh -c "limit descriptors 10 ; $dir/$plank_program $testdir > tmp-$enum-correct-tarfile.txt" 2>tmp-$enum-correct-stderr.txt
+#csh -c "limit descriptors 10 ; $dir/$program $testdir > tmp-$enum-your-tarfile.txt" 2>tmp-$enum-your-stderr.txt
+#call="csh -c \"limit descriptors 10 ; $dir/$program $testdir > tmp-$enum-your-tarfile.txt\""
+
+
+$dir/$plank_program $testdir > tmp-$enum-correct-tarfile.txt 2>tmp-$enum-correct-stderr.txt
+$dir/$program $testdir > tmp-$enum-your-tarfile.txt 2>tmp-$enum-your-stderr.txt
+call="$dir/$program $testdir > tmp-$enum-your-tarfile.txt"
 
 err=`diff tmp-$enum-correct-stderr.txt tmp-$enum-your-stderr.txt | wc | awk '{ print $1 }'`
 
@@ -58,7 +63,8 @@ fi
 
 $dir/bin/tarf < tmp-$enum-correct-tarfile.txt > tmp-$enum-correct-stdout.txt 2>tmp-$enum-correct-stderr.txt
 $dir/bin/tarf < tmp-$enum-your-tarfile.txt > tmp-$enum-your-stdout.txt 2>tmp-$enum-your-stderr.txt
-call="csh -c \"limit descriptors 10 ; ./$program $testdir > tmp-$enum-your-tarfile.txt\" ; $dir/bin/tarf < tmp-$enum-your-tarfile.txt > tmp-$enum-your-stdout.txt"
+#call="csh -c \"limit descriptors 10 ; ./$program $testdir > tmp-$enum-your-tarfile.txt\" ; $dir/bin/tarf < tmp-$enum-your-tarfile.txt > tmp-$enum-your-stdout.txt"
+call="./$program $testdir > tmp-$enum-your-tarfile.txt\" ; $dir/bin/tarf < tmp-$enum-your-tarfile.txt > tmp-$enum-your-stdout.txt"
 
 out=`diff tmp-$enum-correct-stdout.txt tmp-$enum-your-stdout.txt | wc | awk '{ print $1 }'`
 err=`diff tmp-$enum-correct-stderr.txt tmp-$enum-your-stderr.txt | wc | awk '{ print $1 }'`
