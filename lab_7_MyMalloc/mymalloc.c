@@ -57,7 +57,7 @@ void *my_malloc(size_t size) {
                             malloc_begin = NULL;
                         }
                         else {
-                            malloc_begin = f->flink;
+                            malloc_begin = (char *) f->flink;
                             f->flink = NULL;
                         }
                     }
@@ -67,13 +67,21 @@ void *my_malloc(size_t size) {
                     }
                     ptr_u_int = (unsigned int *) f;
                     *ptr_u_int = f->size;
-                    ptr = f;
+                    ptr = (void *) f;
                 }
                 else {
+                    ptr = (void *) f;
                     //take out part of the memory chunk and return, leave the rest
-                    ptr = f + fm_size;
-                    ptr = size;
-                    f = fm_size;
+
+                    ptr = (void *) f; 
+                    ptr += fm_size;
+                    printf("ptr: 0x%lx \n",(long unsigned int) ptr);
+
+                    ptr_u_int = (unsigned int *) ptr;
+                    *ptr_u_int = size;
+
+                    ptr_u_int = (unsigned int *) f;
+                    *ptr_u_int = fm_size;
                 }
                 break;
             }
@@ -83,7 +91,32 @@ void *my_malloc(size_t size) {
             }
         }
         if(ptr == NULL) { //we didnt find a suitable block in the list we can just call jbrk with the size and return it.
+            if(size > 8184) {
+            rem = size % 8;
+            if(rem > 0) size += (8 - rem + 8);
+            else size += 8;
+            ptr = (void *) sbrk(size);
+            ptr_u_int = (unsigned int *) ptr;
+            *ptr_u_int = size;
+            }
+            else {
+                rem = size % 8;
+                if(rem > 0) size += (8 - rem + 8);
+                else size += 8;
+                ptr = (void *) sbrk(8192);
+                fm_size = 8192 - size;
 
+                //here we need to set the next on malloc begin to the previous malloc begin and test *****
+                malloc_begin = (char *) ptr;
+                f = (Flist) ptr;
+                f->size = fm_size;
+                f->flink = NULL;
+
+                ptr += fm_size;
+                ptr_u_int = (unsigned int *) ptr;
+                *ptr_u_int = size;
+                
+            }
         }
     }
 
@@ -101,29 +134,39 @@ void *free_list_next(void *node) {
 }
 
 void my_free(void *ptr) {
-    
+
 }
 
 int main() {
     Flist f;
     int *size;
 
+
   
     void* val = my_malloc((5000));
-    printf("free list pointer: 0x%lx\n", (long unsigned int) malloc_begin);
-    f = (Flist) malloc_begin;
-    printf("%d\n", f->size);
 
-
-    
-    printf("pointer to the memory we asked for: 0x%lx\n", (long unsigned int) val);
+    f = free_list_begin();
+    while(f != NULL) {
+        printf("f: 0x%lx f size:%d\n", (long unsigned int) f, f->size);
+        f = free_list_next(f);
+    }
+    printf("pointer to the memory we asked for: 0x%lx, ", (long unsigned int) val);
     val = val - 8;
-    printf("8 bytes behind the pointer to the memory we asked for: 0x%lx\n", (long unsigned int) val);
     size = (int *) val; 
     printf("size of the memory we asked for: %d\n", *size);
+    
+    val = my_malloc(800);
+
     f = free_list_begin();
-    printf("size of the memory we asked for from free_list_begin(): %d\n", f->size);
-    f = free_list_next(f);
-    if(f == NULL) printf("NULL\n");    
+    while(f != NULL) {
+        printf("f: 0x%lx f size:%d\n", (long unsigned int) f, f->size);
+        f = free_list_next(f);
+    }
+    printf("pointer to the memory we asked for: 0x%lx, ", (long unsigned int) val);
+    val = val - 8;
+    size = (int *) val; 
+    printf("size of the memory we asked for at 0x%lx: %d\n", (long unsigned int) val, *size);
+
+    
     return 0;
 }
