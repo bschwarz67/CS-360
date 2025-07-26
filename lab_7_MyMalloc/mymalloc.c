@@ -134,6 +134,17 @@ void *free_list_next(void *node) {
 }
 
 void my_free(void *ptr) {
+    int *size;
+    Flist f, f2;
+    ptr = ptr - 8;
+    size = (int *) ptr;
+    printf("%d \n", *size);
+    printf("0x%lx\n",(long unsigned int) ptr);
+    f = (Flist) ptr; 
+    f->size = *size;
+    f2 = free_list_begin();
+    f->flink = f2;
+    malloc_begin = (char *) f;
 
 }
 
@@ -180,9 +191,50 @@ int main() {
     size = (int *) val; 
     printf("size of the memory we asked for at 0x%lx: %d\n", (long unsigned int) val, *size);
 
+
+
+
+    val = my_malloc(3184);
+
+    f = free_list_begin();
+    while(f != NULL) {
+        printf("f: 0x%lx f size:%d\n", (long unsigned int) f, f->size);
+        f = free_list_next(f);
+    }
+    printf("pointer to the memory we asked for: 0x%lx, ", (long unsigned int) val);
+    val = val - 8;
+    size = (int *) val; 
+    printf("size of the memory we asked for at 0x%lx: %d\n", (long unsigned int) val, *size);
+
+
+    val = my_malloc(4000);
+
+    f = free_list_begin();
+    while(f != NULL) {
+        printf("f: 0x%lx f size:%d\n", (long unsigned int) f, f->size);
+        f = free_list_next(f);
+    }
+    printf("pointer to the memory we asked for: 0x%lx, ", (long unsigned int) val);
+    val = val - 8;
+    size = (int *) val; 
+    printf("size of the memory we asked for at 0x%lx: %d\n", (long unsigned int) val, *size);
+
+
+    val = my_malloc(3176);
+
+    f = free_list_begin();
+    while(f != NULL) {
+        printf("f: 0x%lx f size:%d\n", (long unsigned int) f, f->size);
+        f = free_list_next(f);
+    }
+    printf("pointer to the memory we asked for: 0x%lx, ", (long unsigned int) val);
+    val = val - 8;
+    size = (int *) val; 
+    printf("size of the memory we asked for at 0x%lx: %d\n", (long unsigned int) val, *size);
+
+
+
     //test edge case when the remainder of a free memory node is > 24
-
-
     val = my_malloc(3160);
 
     f = free_list_begin();
@@ -194,5 +246,18 @@ int main() {
     val = val - 8;
     size = (int *) val; 
     printf("size of the memory we asked for at 0x%lx: %d\n", (long unsigned int) val, *size);
+
+
+
+    my_free(val + 8);
+    f = free_list_begin();
+    while(f != NULL) {
+        printf("f: 0x%lx f size:%d\n", (long unsigned int) f, f->size);
+        f = free_list_next(f);
+    }
+
+
+
+
     return 0;
 }
