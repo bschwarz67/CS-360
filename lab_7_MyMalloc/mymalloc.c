@@ -152,11 +152,23 @@ void my_free(void *ptr) {
 
 }
 
+int cmpulong(const void *a, const void *b) {
+
+
+    if(*((long unsigned int *) a) < *((long unsigned int *) b)) {
+        return -1;
+    }
+    else if(*((long unsigned int *) a) > *((long unsigned int *) b)) {
+        return 1;
+    }
+    return 0;
+}
 
 void coalesce_free_list() {
-    Flist f;
-    int size = 0, i = 0;
+    Flist f, f2;
+    int size = 0, i = 0, j;
     long unsigned int *ads;
+    char *ptr, *ptr2;
 
     f = free_list_begin();
     while(f != NULL) {
@@ -171,12 +183,33 @@ void coalesce_free_list() {
         f = free_list_next(f);
         i++;
     }
+    if(size > 0) {
+        qsort(ads, size, sizeof(long unsigned int), cmpulong);
+        i = 0;
+        ptr = (char *) *(ads + i);
+        malloc_begin = ptr;
+        f = (Flist) *(ads + i);
 
-    for(i = 0; i < size; i++) {
-        printf("0x%lx\n", ads[i]);
+        for(i; i < size; i++) {
+            if(i + 1 < size) {
+                ptr2 = (char *) *(ads + i + 1);
+                f2 = (Flist) ptr2;
+                if(ptr + f->size == ptr2) {
+                    f->size = f->size + f2->size;
+                    printf("%d\n",f->size);
+                }
+                else {
+                    f->flink = f2;
+                    ptr = ptr2;
+                    f = f2;
+                    printf("%d\n",f->size);
+                }
+                
+            }
+        }
+        f->flink = NULL;
     }
-
-
+    
     
 }
 
@@ -232,7 +265,7 @@ int main() {
     my_free(val2);
     my_free(val3);
     my_free(val4);
-    my_free(val5);
+    //my_free(val5);
     my_free(val6);
     my_free(val7);
 
@@ -243,14 +276,19 @@ int main() {
         f = free_list_next(f);
     }
     printf("\n");
-    coalesce_free_list();
 
+    
+    coalesce_free_list();
+    printf("\n");
     f = free_list_begin();
+    printf("%d\n",(int) f->size);
+    printf("%d\n",(int) f->flink->size);
+    printf("f: 0x%lx %d\n", (long unsigned int) f, (int) f->size);
+    
     while(f != NULL) {
         printf("f: 0x%lx f size:%d\n", (long unsigned int) f, f->size);
         f = free_list_next(f);
     }
-
-
+    
     return 0;
 }
