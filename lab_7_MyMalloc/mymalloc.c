@@ -1,5 +1,7 @@
 #include "mymalloc.h"
 
+char *malloc_head = NULL;
+
 void *my_malloc(size_t size) {
     void *ptr = NULL;
     unsigned int *ptr_u_int;
@@ -8,7 +10,7 @@ void *my_malloc(size_t size) {
 
 
     /*if there is no pre existing free list*/
-    if(malloc_begin == NULL) {
+    if(malloc_head == NULL) {
         if(size > 8184) {
             rem = size % 8;
             if(rem > 0) size += (8 - rem + 8);
@@ -33,7 +35,7 @@ void *my_malloc(size_t size) {
                 *ptr_u_int = 8192;
             }
             else {
-                malloc_begin = (char *) ptr;
+                malloc_head = (char *) ptr;
                 f = (Flist) ptr;
                 f->size = fm_size;
                 f->flink = NULL;
@@ -58,10 +60,10 @@ void *my_malloc(size_t size) {
                 if(fm_size < 24) {
                     if(prev == NULL) {
                         if(f->flink == NULL) {
-                            malloc_begin = NULL;
+                            malloc_head = NULL;
                         }
                         else {
-                            malloc_begin = (char *) f->flink;
+                            malloc_head = (char *) f->flink;
                         }
                     }
                     else {
@@ -112,15 +114,21 @@ void *my_malloc(size_t size) {
 
                 //here we need to set the next on malloc begin to the previous malloc begin and test *****
                 //now we need to test this after work.
-                f2 = free_list_begin();
-                f = (Flist) ptr;
-                f->size = fm_size;
-                f->flink = f2;
-                malloc_begin = (char *) ptr;
-
-                ptr += fm_size;
-                ptr_u_int = (unsigned int *) ptr;
-                *ptr_u_int = size;
+                if(fm_size < 24) {
+                    ptr_u_int = (unsigned int *) ptr;
+                    *ptr_u_int = 8192;
+                }
+                else {
+                    f2 = free_list_begin();
+                    f = (Flist) ptr;
+                    f->size = fm_size;
+                    f->flink = f2;
+                    malloc_head = (char *) ptr;
+                    ptr += fm_size;
+                    ptr_u_int = (unsigned int *) ptr;
+                    *ptr_u_int = size;
+                }
+                
                 
             }
         }
@@ -131,7 +139,7 @@ void *my_malloc(size_t size) {
 
 void *free_list_begin() {
     Flist f = NULL;
-    if(malloc_begin != NULL) f = (Flist) malloc_begin; 
+    if(malloc_head != NULL) f = (Flist) malloc_head; 
     return f;
 }
 void *free_list_next(void *node) {
@@ -148,7 +156,7 @@ void my_free(void *ptr) {
     f->size = *size;
     f2 = free_list_begin();
     f->flink = f2;
-    malloc_begin = (char *) f;
+    malloc_head = (char *) f;
 
 }
 
@@ -187,7 +195,7 @@ void coalesce_free_list() {
         qsort(ads, size, sizeof(long unsigned int), cmpulong);
         i = 0;
         ptr = (char *) *(ads + i);
-        malloc_begin = ptr;
+        malloc_head = ptr;
         f = (Flist) *(ads + i);
 
         for(i; i < size; i++) {
@@ -214,12 +222,12 @@ void coalesce_free_list() {
 }
 
 
-
+/*
 int main() {
     Flist f;
     int *size;
 
-    /*
+    
     void *val = my_malloc((5000));
     void *val2 = my_malloc(800);
     my_free(val);
@@ -239,7 +247,7 @@ int main() {
         printf("f: 0x%lx f size:%d\n", (long unsigned int) f, f->size);
         f = free_list_next(f);
     }
-    */
+    
 
     
     void* val = my_malloc((5000));
@@ -292,3 +300,5 @@ int main() {
     
     return 0;
 }
+
+*/
