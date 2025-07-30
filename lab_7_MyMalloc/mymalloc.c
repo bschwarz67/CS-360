@@ -204,13 +204,13 @@ void coalesce_free_list() {
                 f2 = (Flist) ptr2;
                 if(ptr + f->size == ptr2) {
                     f->size = f->size + f2->size;
-                    printf("%d\n",f->size);
+                    //printf("%d\n",f->size);
                 }
                 else {
                     f->flink = f2;
                     ptr = ptr2;
                     f = f2;
-                    printf("%d\n",f->size);
+                    //printf("%d\n",f->size);
                 }
                 
             }
