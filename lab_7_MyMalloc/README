@@ -1,0 +1,11 @@
+Full lab description here: https://web.eecs.utk.edu/~jplank/plank/classes/cs360/360/labs/Lab-7-Malloc/
+
+This is an implementation of malloc and free as described by Dr Plank. Sbrk() system call used to provide heap memory. Unused memory/freed is kept track of in a singly linked list. 
+
+to run gradescript: ./gradescript (1-100)
+
+
+gcc mymalloc.c -o bin/mymalloc 
+./bin/mymalloc
+
+works if you uncoment the main function, you can compile and run the program.
