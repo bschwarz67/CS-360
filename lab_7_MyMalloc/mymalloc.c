@@ -222,12 +222,11 @@ void coalesce_free_list() {
 }
 
 
-
+/*
 int main() {
     Flist f;
     int *size;
-
-    /*
+    
     void *val = my_malloc((5000));
     void *val2 = my_malloc(800);
     my_free(val);
@@ -247,8 +246,9 @@ int main() {
         printf("f: 0x%lx f size:%d\n", (long unsigned int) f, f->size);
         f = free_list_next(f);
     }
-    */
+    
 
+    //second more complex test starts here, uncomment this part to compile and run without gradescript
     
     void* val = my_malloc((5000));
     
@@ -299,5 +299,6 @@ int main() {
     }
     
     return 0;
+    
 }
-
+*/
