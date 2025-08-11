@@ -2,6 +2,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <sys/wait.h>
 #include "/home/bryan/Desktop/PersonalCodeRepo/CS-360/Libfdr/include/jrb.h"
 #include "/home/bryan/Desktop/PersonalCodeRepo/CS-360/Libfdr/include/fields.h"
 #include "/home/bryan/Desktop/PersonalCodeRepo/CS-360/Libfdr/include/dllist.h"
@@ -22,17 +24,12 @@ void free_command(Command *comm) {
     
     free(comm->stdin);
     free(comm->stdout);
-    printf("number of commands: %d\n",comm->n_commands);
     for(int i = 0; i < comm->n_commands; i++) {
-        printf("command # %d\n",i);
         for(int j = 0; j < comm->argcs[i] - 1; j++) {
-            printf("%s\n", comm->argvs[i][j]);
             free(comm->argvs[i][j]);
         }
-        printf("check\n");
 
         free(comm->argvs[i]);
-        printf("check2\n");
     }
     free(comm->argvs);
     free(comm->argcs);
@@ -46,7 +43,7 @@ void free_command(Command *comm) {
     comm->wait = 1;
     comm->n_commands = 0;
     comm->comlist = new_dllist();
-    printf("completed freeing everyting\n");
+    //printf("completed freeing everything\n");
 
 }
 
@@ -61,12 +58,13 @@ int main() {
     comm->n_commands = 0;
     comm->comlist = new_dllist();
     char **argv;
-    int i, j;
+    int i, j, dummy1, dummy2, prev = -1, fd;
     Dllist tmp;
+    int pipefd[2];
+    char s[1000];
 
     while (get_line(is) >= 0) {
         if(is->NF > 0 && (is->fields[0][0] != 35)) {
-            printf("%d\n", is->NF);
             if(is->NF == 2 && strcmp(is->fields[0], "<") == 0) {
                 comm->stdin = (char *) malloc((strlen(is->fields[1]) + 1) * sizeof(char));
                 strcpy(comm->stdin, is->fields[1]);
@@ -85,13 +83,11 @@ int main() {
             }
             else if(is->NF == 1 && strcmp(is->fields[0], "NOWAIT") == 0) {
                 comm->wait = 0;
-                printf("nowait\n");
 
             }
             else if(!(is->NF == 1 && strcmp(is->fields[0], "END") == 0)) {
-                printf("adding a line for command\n");
                 comm->n_commands++;
-                argv = (char **) malloc((is->NF + 1) * sizeof(char **));
+                argv = (char **) malloc((is->NF + 1) * sizeof(char *));
                 for(i = 0; i < is->NF; i++) {
                     argv[i] = (char *) malloc((strlen(is->fields[i]) + 1) * sizeof(char));
                     strcpy(argv[i], is->fields[i]);
@@ -101,8 +97,6 @@ int main() {
 
             }
             else { //once we get a END we execute, then we free all of the memory and return the command struct to a default state
-                printf("end called\n");
-                printf("number of commands %d\n", comm->n_commands);
                 comm->argcs = (int *) malloc(comm->n_commands * sizeof(int));
                 comm->argvs = (char ***) malloc(comm->n_commands * sizeof(char **));
                 i = 0;
@@ -114,13 +108,100 @@ int main() {
                     }
 
                     comm->argcs[i] = j + 1;
-                    printf("%d\n",j);
                     comm->argvs[i] = argv;
 
                     i++;
 
                 }
 
+                for(i = 0; i < comm->n_commands; i++) {
+                    fflush(stdin);
+                    fflush(stdout);
+                    fflush(stderr);
+                    j = pipe(pipefd);
+                    if (j < 0) {
+                        perror("pipe");
+                        exit(1);
+                    }
+                    if(fork() == 0) {
+
+                        if(i == comm->n_commands - 1) {
+                            if(comm->stdout != NULL) {
+                                if(comm->append_stdout == 0) fd = open(comm->stdout, O_WRONLY | O_TRUNC);
+                                else fd = open(comm->stdout, O_WRONLY);
+
+                                if (fd < 0) { perror("open"); exit(1); }
+                                lseek(fd, 0, SEEK_END);
+                                if (dup2(fd, 1) != 1) {   
+                                    perror("error dup2(fd)");
+                                    exit(1);
+                                }
+                                close(fd);
+                            }   
+                        }
+                        else {
+                            //redirect standard output to pipe
+                            if (dup2(pipefd[1], 1) != 1) {
+                                perror("dup2(pipefd[1])");
+                                exit(1);
+                            }
+                        }
+                        close(pipefd[1]);
+
+                        if(i == 0) {
+                            if(comm->stdin != NULL) {
+                                
+                                fd = open(comm->stdin, O_RDONLY, 0644);
+                                if (fd < 0) { perror("open"); exit(1); }
+                                if (dup2(fd, 0) != 0) {   
+                                    perror("dup2(fd)");
+                                    exit(1);
+                                }
+                                close(fd);
+                                
+                            }
+                        }
+                        else {
+                            
+                            if (dup2(prev, 0) != 0) {   
+                                perror("dup2(prev)");
+                                exit(1);
+                            }
+                            close(prev);
+                            
+                        }
+                        close(pipefd[0]);
+                        
+                        //finally exec
+                        fprintf(stderr, "Execcing\n");
+                        execvp(comm->argvs[i][0], comm->argvs[i]);
+                        exit(1);
+
+                        
+                    }
+                    else {
+                        if(i == comm->n_commands - 1) {
+                            close(pipefd[0]);
+                        }
+                        close(pipefd[1]);
+
+                        if(i == 0) {
+                            prev = pipefd[0];
+                        }
+                        else {
+                            if(prev > 0) close(prev);
+                            prev = pipefd[0];
+                        }
+                        
+                    }     
+                }
+                
+
+                //wait(&dummy1);
+                //wait(&dummy2);
+                //if (WEXITSTATUS(dummy1) || WEXITSTATUS(dummy2)) {
+                //fprintf(stderr, "Abnormal exit.\n");
+                //}
                 free_command(comm);
 
             }
