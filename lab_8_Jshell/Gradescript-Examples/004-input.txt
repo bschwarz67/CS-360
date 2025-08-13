@@ -1,0 +1,12 @@
+/home/bryan/Desktop/PersonalCodeRepo/CS-360/lab_8_Jshell/bin/cattostde /home/bryan/Desktop/PersonalCodeRepo/CS-360/lab_8_Jshell/Gradescript-Examples/Input-File-9.txt
+END
+
+cat /home/bryan/Desktop/PersonalCodeRepo/CS-360/lab_8_Jshell/Gradescript-Examples/Input-File-8.txt
+END
+
+/home/bryan/Desktop/PersonalCodeRepo/CS-360/lab_8_Jshell/bin/cattostde /home/bryan/Desktop/PersonalCodeRepo/CS-360/lab_8_Jshell/Gradescript-Examples/Input-File-7.txt
+END
+
+cat /home/bryan/Desktop/PersonalCodeRepo/CS-360/lab_8_Jshell/Gradescript-Examples/Input-File-6.txt
+END
+

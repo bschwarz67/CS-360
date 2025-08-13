@@ -62,8 +62,10 @@ int main() {
     Dllist tmp;
     int pipefd[2];
     char s[1000];
+    JRB t, t_tmp;
 
     while (get_line(is) >= 0) {
+
         if(is->NF > 0 && (is->fields[0][0] != 35)) {
             if(is->NF == 2 && strcmp(is->fields[0], "<") == 0) {
                 comm->stdin = (char *) malloc((strlen(is->fields[1]) + 1) * sizeof(char));
@@ -113,7 +115,7 @@ int main() {
                     i++;
 
                 }
-
+                t = make_jrb();
                 for(i = 0; i < comm->n_commands; i++) {
                     fflush(stdin);
                     fflush(stdout);
@@ -123,7 +125,8 @@ int main() {
                         perror("pipe");
                         exit(1);
                     }
-                    if(fork() == 0) {
+                    j = fork();
+                    if(j == 0) {
 
                         if(i == comm->n_commands - 1) {
                             if(comm->stdout != NULL) {
@@ -173,7 +176,7 @@ int main() {
                         close(pipefd[0]);
                         
                         //finally exec
-                        fprintf(stderr, "Execcing\n");
+                        //fprintf(stderr, "Execcing\n");
                         execvp(comm->argvs[i][0], comm->argvs[i]);
                         exit(1);
 
@@ -192,8 +195,28 @@ int main() {
                             if(prev > 0) close(prev);
                             prev = pipefd[0];
                         }
-                        
+                        jrb_insert_int(t, j, new_jval_v(NULL));
                     }     
+                }
+                
+                
+                if(comm->wait == 1) {
+                    i = 1;
+                    while(i) {
+                        j = wait(&dummy1);
+                        t_tmp = jrb_find_int(t,j);
+                        //printf("%d\n", t_tmp->key.i);
+                        if(t_tmp != NULL) {
+                            jrb_delete_node(t_tmp);
+                        }
+                        if(jrb_empty(t)) i = 0;
+                    }
+
+                    /*
+                    jrb_traverse(t_tmp, t) {
+                        printf("%d", t_tmp->key.i);
+                    }
+                    */
                 }
                 
 

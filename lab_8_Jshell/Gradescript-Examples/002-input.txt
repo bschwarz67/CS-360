@@ -1,0 +1,9 @@
+cat /home/bryan/Desktop/PersonalCodeRepo/CS-360/lab_8_Jshell/Gradescript-Examples/Input-File-2.txt /home/bryan/Desktop/PersonalCodeRepo/CS-360/lab_8_Jshell/Gradescript-Examples/Input-File-3.txt
+END
+
+cat /home/bryan/Desktop/PersonalCodeRepo/CS-360/lab_8_Jshell/Gradescript-Examples/Input-File-4.txt
+END
+
+sort -nr/home/bryan/Desktop/PersonalCodeRepo/CS-360/lab_8_Jshell/Gradescript-Examples/Input-File-5.txt
+END
+

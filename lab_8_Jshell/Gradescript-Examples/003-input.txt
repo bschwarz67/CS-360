@@ -1,0 +1,6 @@
+sed s/o/oo/g //home/bryan/Desktop/PersonalCodeRepo/CS-360/lab_8_Jshell/Gradescript-Examples/Input-File-5.txt
+END
+
+grep a /home/bryan/Desktop/PersonalCodeRepo/CS-360/lab_8_Jshell/Gradescript-Examples/Input-File-5.txt
+END
+
