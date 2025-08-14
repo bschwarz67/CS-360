@@ -1,0 +1,16 @@
+https://web.eecs.utk.edu/~jplank/plank/classes/cs360/360/labs/Lab-8-Jshell/ is the link to the lab.
+
+compile: make
+run: ./gradescript [1-100] or ./bin/jshell then the commands listed in the lab:
+
+The command format
+jshell reads lines of text from standard input. Commands are composed of multiple lines. Here's how to interpret each line (use the fields library):
+
+    Blank line, or a line that begins with a '#': Ignore
+    A line whose first word is "<" -- this should have a single word after it, which you will interpret as a filename. You will redirect standard input from that file to the first child process of the command.
+    A line whose first word is ">" -- this should have a single word after it, which you will interpret as a filename. You will redirect standard output of the last child process in the command, to that file.
+    A line whose first word is ">>" -- this should have a single word after it, which you will interpret as a filename. You will redirect standard output of the last child process in the command, and append to that file.
+    A line composed of the word "NOWAIT". This means that when you run the command, you will not wait for any of the child processes to exit.
+    A line composed of the word "END". This means that the command is over and you should go about executing it.
+    Any other line is interpreted as an argv array for a child process in the command. You can specify any number of these, and when you execute the command, each child process should be connected to the next via pipes -- standard output of child i goes to standard input of child i+1.
+    These lines can be specified in any order; however, when you read "END", you execute the command that you have been reading. 
