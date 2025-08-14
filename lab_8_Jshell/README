@@ -18,3 +18,5 @@ compile: make
 run: ./gradescript [1-100] or ./bin/jshell then the commands listed in the lab:
 
 
+this is the command I used to change the file paths of the files used in the shell commands in the input text files of the gradescripts to work on my machine:
+sed -i 's/\/home\/jplank\/cs360\/labs\/Lab-8-Jshell/\/home\/bryan\/Desktop\/PersonalCodeRepo\/CS-360\/lab_8_Jshell/' ./Gradescript-Examples/069-input.txt
