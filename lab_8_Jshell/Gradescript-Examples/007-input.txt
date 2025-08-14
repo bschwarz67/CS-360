@@ -1,0 +1,28 @@
+rm -f f1.txt f2.txt f3.txt f4.txt f5.txt
+END
+
+/home/bryan/Desktop/PersonalCodeRepo/CS-360/lab_8_Jshell/bin/strays-files /home/bryan/Desktop/PersonalCodeRepo/CS-360/lab_8_Jshell/Gradescript-Examples/Input-File-5.txt f1.txt
+NOWAIT
+END
+
+/home/bryan/Desktop/PersonalCodeRepo/CS-360/lab_8_Jshell/bin/strays-files /home/bryan/Desktop/PersonalCodeRepo/CS-360/lab_8_Jshell/Gradescript-Examples/Input-File-6.txt f2.txt
+NOWAIT
+END
+
+/home/bryan/Desktop/PersonalCodeRepo/CS-360/lab_8_Jshell/bin/strays-files /home/bryan/Desktop/PersonalCodeRepo/CS-360/lab_8_Jshell/Gradescript-Examples/Input-File-7.txt f3.txt
+NOWAIT
+END
+
+/home/bryan/Desktop/PersonalCodeRepo/CS-360/lab_8_Jshell/bin/strays-files /home/bryan/Desktop/PersonalCodeRepo/CS-360/lab_8_Jshell/Gradescript-Examples/Input-File-8.txt f4.txt
+NOWAIT
+END
+
+sleep 1
+END
+
+/home/bryan/Desktop/PersonalCodeRepo/CS-360/lab_8_Jshell/bin/strays-files /home/bryan/Desktop/PersonalCodeRepo/CS-360/lab_8_Jshell/Gradescript-Examples/Input-File-2.txt f5.txt 
+END
+
+cat f1.txt f2.txt f3.txt f4.txt f5.txt
+END
+

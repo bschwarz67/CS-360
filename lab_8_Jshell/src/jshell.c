@@ -61,7 +61,7 @@ int main() {
     int i, j, dummy1, dummy2, prev = -1, fd;
     Dllist tmp;
     int pipefd[2];
-    char s[1000];
+    char *s;
     JRB t, t_tmp;
 
     while (get_line(is) >= 0) {
@@ -130,8 +130,8 @@ int main() {
 
                         if(i == comm->n_commands - 1) {
                             if(comm->stdout != NULL) {
-                                if(comm->append_stdout == 0) fd = open(comm->stdout, O_WRONLY | O_TRUNC);
-                                else fd = open(comm->stdout, O_WRONLY);
+                                if(comm->append_stdout == 0) fd = open(comm->stdout, O_WRONLY | O_TRUNC | O_CREAT, 0644);
+                                else fd = open(comm->stdout, O_WRONLY | O_CREAT, 0644);
 
                                 if (fd < 0) { perror("open"); exit(1); }
                                 lseek(fd, 0, SEEK_END);
@@ -177,7 +177,11 @@ int main() {
                         
                         //finally exec
                         //fprintf(stderr, "Execcing\n");
+                        
                         execvp(comm->argvs[i][0], comm->argvs[i]);
+                        s = (char *) malloc((strlen(comm->argvs[i][0]) + 1) * sizeof(char));
+                        sprintf (s, "%s", comm->argvs[i][0]);
+                        perror(s);
                         exit(1);
 
                         
@@ -218,7 +222,6 @@ int main() {
                     }
                     */
                 }
-                
 
                 //wait(&dummy1);
                 //wait(&dummy2);
