@@ -1,0 +1,15 @@
+lab writeup here: https://web.eecs.utk.edu/~jplank/plank/classes/cs360/360/labs/Lab-A-Bonding/index.html
+
+
+this lab is on multithreading. 'oxygen' and 'hydrogen' threads are created for the specified number of water molecules, and the task of the lab is to implement three functions that allow these
+threads to communicate in order for each thread to be grouped into sets of 3 threads (2 'hydrogen' 1 'oxygen'), and have each set's 3 thread ids printed out from each of the 3 threads.
+
+compile: make
+
+run:
+
+to grade all: ./gradeall
+
+to grade one with the gradescript: ./gradescript (1-100)
+
+general command line: bonding seed num_molecules max_outstanding verbosity
