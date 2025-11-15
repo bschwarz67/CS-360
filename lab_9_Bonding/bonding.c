@@ -71,7 +71,6 @@ void *hydrogen(void *arg)
         pthread_cond_signal(temp->ready);
         pthread_cond_signal(temp2->ready);
         pthread_mutex_unlock(g->lock);
-
         rv = Bond(ti->h1, ti->h2, ti->o);
         free(ti);
         return rv;
