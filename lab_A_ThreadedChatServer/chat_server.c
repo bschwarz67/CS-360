@@ -17,8 +17,7 @@ void *client_thread(void *arg) {
     Client *c;
     Room *r;
     User *u;
-    //print possible chat rooms, get response, check if valid chatroom, if valid, put chat room struct into client struct, put fout into members, and start a thread.
-    //need to also create the list of fouts
+    //TODO display names of users in each room, make sure joining order is reflected
 
     c = (Client *) arg;
     fin = fdopen(c->fd, "r");
@@ -89,7 +88,7 @@ void *client_thread(void *arg) {
 
     
     }
-    //need to close all hanging fin/fout in case of an interrupt
+    //need to close all hanging fin/fout in case of an interrupt, and remove the User from the JRB
     printf("exiting...\n");
 }
 
