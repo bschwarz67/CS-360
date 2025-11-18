@@ -12,12 +12,12 @@ void *client_thread(void *arg) {
     char clean_line[300], line[300], name[300];
     char *room_name;
     FILE *fin, *fout;
-    JRB tmp;
+    JRB tmp, tmp3;
     Dllist tmp2;
     Client *c;
     Room *r;
     User *u;
-    //TODO display names of users in each room, make sure joining order is reflected
+    //TODO remove User, close their streams once the user leaves, do memory clean up.
 
     c = (Client *) arg;
     fin = fdopen(c->fd, "r");
@@ -30,8 +30,15 @@ void *client_thread(void *arg) {
     
     jrb_traverse(tmp, c->rooms) {
         room_name = (char *) tmp->key.v;
+        r = (Room *) tmp->val.v;
         fputs(room_name, fout);
-        fprintf(fout, ":\n");
+        fprintf(fout, ":");
+        jrb_traverse(tmp3, r->members) {
+            u = (User *) tmp3->val.v;
+            fprintf(fout, " ");
+            fputs(u->name, fout);
+        }
+        fprintf(fout, "\n");
         fflush(fout);
     }
 
@@ -88,7 +95,7 @@ void *client_thread(void *arg) {
 
     
     }
-    //need to close all hanging fin/fout in case of an interrupt, and remove the User from the JRB
+    //in case of an interrupt, need to close all hanging fin/fout and remove the User from the JRB
     printf("exiting...\n");
 }
 
