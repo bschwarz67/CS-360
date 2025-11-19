@@ -17,12 +17,10 @@ void *client_thread(void *arg) {
     Client *c;
     Room *r;
     User *u;
-    //TODO remove User, close their streams once the user leaves, do memory clean up.
 
     c = (Client *) arg;
     fin = fdopen(c->fd, "r");
     fout = fdopen(c->fd, "w");
-    printf("%d\n",c->fd);
     fprintf(fout, "Chat Rooms:");
     fprintf(fout, "\n");
     fprintf(fout, "\n");
@@ -51,7 +49,6 @@ void *client_thread(void *arg) {
         if (sscanf(line, "%s\n", clean_line) == 1) {
             strcpy(name, clean_line);
             done = 1;
-            printf("name %s\n", name);
         }
     }
     fprintf(fout, "Enter chat room:");
@@ -61,7 +58,6 @@ void *client_thread(void *arg) {
     while(!done && fgets(line, 300, fin) != NULL) {
 
         if (sscanf(line, "%s\n", clean_line) == 1) {
-            printf("cleaned %s\n", clean_line);
             tmp = jrb_find_str(c->rooms, clean_line);
             
 
@@ -70,18 +66,16 @@ void *client_thread(void *arg) {
                 fflush(fout);
             } 
             else {
-                //broadast to all fd's in the room that a new user joined, add the fd to the room's fd, listen for input, put into the dlist then signal to room thread to broadcast
                 r = (Room *) tmp->val.v;
                 u = (User *) malloc(sizeof(User));
                 strcpy(u->name, name);
-                printf("i work here\n");
                 //u->fout = new_jval_v((void *) fout);
                 u->fout = fout;
                 u->fin = fin;
-                printf("her as well\n");
+                pthread_mutex_lock(r->lock);
                 jrb_insert_int(r->members, r->n, new_jval_v((void *) u));
                 r->n++;
-                printf("here\n");
+                pthread_mutex_unlock(r->lock);
                 jrb_traverse(tmp, r->members) {
                     u = (User *) tmp->val.v; 
                     //fout = (FILE *) u->fout.v;
@@ -89,20 +83,45 @@ void *client_thread(void *arg) {
                     fflush(u->fout);
                 }
                 done = 1;
-                printf("correct room entered, room found, threat created\n");
             }
         }
 
     
     }
-    //in case of an interrupt, need to close all hanging fin/fout and remove the User from the JRB
+    done = 0;
+    while(!done && fgets(line, 300, fin) != NULL) {
+        pthread_mutex_lock(r->lock);
+        dll_append(r->text, new_jval_s(strdup(line)));
+        pthread_cond_signal(r->send);       
+        pthread_mutex_unlock(r->lock);
+    }
+
+    //now listen here for input from the stream. once we get input, we signal the room thread. use mutex to protect members when we add members.
+
+    //TODO remove User, close their streams once the user leaves, do memory clean up.
     printf("exiting...\n");
 }
 
 
 void *room_thread(void *arg) {
-    
 
+    Room *r = (Room *) arg;
+    User *u;
+    JRB tmp;
+    
+    while(1) {
+        pthread_mutex_lock(r->lock);
+        pthread_cond_wait(r->send, r->lock);
+        jrb_traverse(tmp, r->members) {
+            u = (User *) tmp->val.v; 
+            //fout = (FILE *) u->fout.v;
+            fprintf(u->fout, "%s: ",u->name);
+            fprintf(u->fout, "%s: ",(char *) dll_last(r->text)->val.s);
+            fflush(u->fout);
+        }
+        pthread_mutex_unlock(r->lock);
+    }
+  
 
 }
 
@@ -122,7 +141,6 @@ int main(int argc, char **argv) {
     sock = serve_socket(atoi(argv[1]));
     rooms =  make_jrb();
     for(int i = 2; i < argc; i++) {
-        printf("%s\n", argv[i]);
 
         Room *r = (Room *) malloc(sizeof(Room));
         r->members = make_jrb();
