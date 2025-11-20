@@ -91,14 +91,20 @@ void *client_thread(void *arg) {
     done = 0;
     while(!done && fgets(line, 300, fin) != NULL) {
         pthread_mutex_lock(r->lock);
-        dll_append(r->text, new_jval_s(strdup(line)));
+        char message[304];
+        strcpy(message, name);
+        strcat(message, ": ");
+        strcat(message, line);
+        dll_append(r->text, new_jval_s(strdup(message)));
         pthread_cond_signal(r->send);       
         pthread_mutex_unlock(r->lock);
     }
 
-    //now listen here for input from the stream. once we get input, we signal the room thread. use mutex to protect members when we add members.
 
     //TODO remove User, close their streams once the user leaves, do memory clean up.
+    //TODO protect the text dll when the room thread reads/ deleted an entry
+    //clean up all memory
+    //handle exit events, this is covered in lab writeup
     printf("exiting...\n");
 }
 
@@ -115,8 +121,7 @@ void *room_thread(void *arg) {
         jrb_traverse(tmp, r->members) {
             u = (User *) tmp->val.v; 
             //fout = (FILE *) u->fout.v;
-            fprintf(u->fout, "%s: ",u->name);
-            fprintf(u->fout, "%s: ",(char *) dll_last(r->text)->val.s);
+            fputs((char *) dll_last(r->text)->val.s, u->fout);
             fflush(u->fout);
         }
         pthread_mutex_unlock(r->lock);
