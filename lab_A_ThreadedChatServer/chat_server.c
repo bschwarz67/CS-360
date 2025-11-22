@@ -16,7 +16,7 @@ void *client_thread(void *arg) {
     Dllist tmp2;
     Client *c;
     Room *r;
-    User *u;
+    User *u, *u2;
 
     c = (Client *) arg;
     fin = fdopen(c->fd, "r");
@@ -67,13 +67,13 @@ void *client_thread(void *arg) {
             } 
             else {
                 r = (Room *) tmp->val.v;
-                u = (User *) malloc(sizeof(User));
-                strcpy(u->name, name);
-                //u->fout = new_jval_v((void *) fout);
-                u->fout = fout;
-                u->fin = fin;
+                u2 = (User *) malloc(sizeof(User));
+                strcpy(u2->name, name);
+                //u2->fout = new_jval_v((void *) fout);
+                u2->fout = fout;
+                u2->fin = fin;
                 pthread_mutex_lock(r->lock);
-                jrb_insert_int(r->members, r->n, new_jval_v((void *) u));
+                jrb_insert_int(r->members, r->n, new_jval_v((void *) u2));
                 n = r->n;
                 r->n++;
                 
@@ -103,14 +103,14 @@ void *client_thread(void *arg) {
     }
 
 
-    printf("%s exiting %s ......\n", u->name, clean_line);
+    printf("%s exiting %s ......\n", u2->name, clean_line);
     close(c->fd);
     fclose(fin);
     fclose(fout);
 
     pthread_mutex_lock(r->lock);
     jrb_delete_node(jrb_find_int(r->members, n));
-    free(u);
+    free(u2);
     jrb_traverse(tmp, r->members) {
         u = (User *) tmp->val.v; 
         //fout = (FILE *) u->fout.v;
