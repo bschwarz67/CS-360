@@ -8,7 +8,7 @@
 
 
 void *client_thread(void *arg) {
-    int fd, done;
+    int n, done;
     char clean_line[300], line[300], name[300];
     char *room_name;
     FILE *fin, *fout;
@@ -74,14 +74,16 @@ void *client_thread(void *arg) {
                 u->fin = fin;
                 pthread_mutex_lock(r->lock);
                 jrb_insert_int(r->members, r->n, new_jval_v((void *) u));
+                n = r->n;
                 r->n++;
-                pthread_mutex_unlock(r->lock);
+                
                 jrb_traverse(tmp, r->members) {
                     u = (User *) tmp->val.v; 
                     //fout = (FILE *) u->fout.v;
                     fprintf(u->fout, "%s has joined\n",name);
                     fflush(u->fout);
                 }
+                pthread_mutex_unlock(r->lock);
                 done = 1;
             }
         }
@@ -101,11 +103,22 @@ void *client_thread(void *arg) {
     }
 
 
-    //TODO remove User, close their streams once the user leaves, do memory clean up.
-    //TODO protect the text dll when the room thread reads/ deleted an entry
-    //clean up all memory
-    //handle exit events, this is covered in lab writeup
-    printf("exiting...\n");
+    printf("%s exiting %s ......\n", u->name, clean_line);
+    close(c->fd);
+    fclose(fin);
+    fclose(fout);
+
+    pthread_mutex_lock(r->lock);
+    jrb_delete_node(jrb_find_int(r->members, n));
+    free(u);
+    jrb_traverse(tmp, r->members) {
+        u = (User *) tmp->val.v; 
+        //fout = (FILE *) u->fout.v;
+        fprintf(u->fout, "%s has left\n",name);
+        fflush(u->fout);
+    }
+    pthread_mutex_unlock(r->lock);
+    free(c);
 }
 
 
@@ -138,14 +151,14 @@ int main(int argc, char **argv) {
     Room *r;
     char *room_name;
 
-    if (argc <= 1) {
-        fprintf(stderr, "usage: <port> <{chat rooms}> \n");
+    if (argc <= 2) {
+        fprintf(stderr, "usage: <host> <port> <{chat rooms}> \n");
         exit(1);
     }
 
-    sock = serve_socket(atoi(argv[1]));
+    sock = serve_socket(atoi(argv[2]));
     rooms =  make_jrb();
-    for(int i = 2; i < argc; i++) {
+    for(int i = 3; i < argc; i++) {
 
         Room *r = (Room *) malloc(sizeof(Room));
         r->members = make_jrb();
@@ -167,14 +180,7 @@ int main(int argc, char **argv) {
         c = (Client *) malloc(sizeof(Client));
         c->fd = fd;
         c->rooms = rooms;
-        pthread_create(&tid2, NULL, client_thread, c);
-
-        
-        
-        
-
-        
-        
+        pthread_create(&tid2, NULL, client_thread, c);        
     }
 
     
