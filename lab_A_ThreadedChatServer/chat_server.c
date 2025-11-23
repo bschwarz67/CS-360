@@ -29,6 +29,7 @@ void *client_thread(void *arg) {
     jrb_traverse(tmp, c->rooms) {
         room_name = (char *) tmp->key.v;
         r = (Room *) tmp->val.v;
+        pthread_mutex_lock(r->lock);
         fputs(room_name, fout);
         fprintf(fout, ":");
         jrb_traverse(tmp3, r->members) {
@@ -36,16 +37,24 @@ void *client_thread(void *arg) {
             fprintf(fout, " ");
             fputs(u->name, fout);
         }
+        pthread_mutex_unlock(r->lock);
         fprintf(fout, "\n");
         fflush(fout);
     }
-
+    fprintf(fout, "\n");
     fprintf(fout, "Enter your chat name (no spaces):");
     fprintf(fout, "\n");
     fflush(fout);
     done = 0;
-    while(!done && fgets(line, 300, fin) != NULL) {
-
+    while(!done) {
+        if(fgets(line, 300, fin) == NULL) {
+            printf("exiting EOF reached ......\n");
+            close(c->fd);
+            fclose(fin);
+            fclose(fout);
+            free(c);
+            return;
+        }
         if (sscanf(line, "%s\n", clean_line) == 1) {
             strcpy(name, clean_line);
             done = 1;
@@ -55,7 +64,15 @@ void *client_thread(void *arg) {
     fprintf(fout, "\n");
     fflush(fout);
     done = 0;
-    while(!done && fgets(line, 300, fin) != NULL) {
+    while(!done) {
+        if(fgets(line, 300, fin) == NULL) {
+            printf("exiting EOF reached ......\n");
+            close(c->fd);
+            fclose(fin);
+            fclose(fout);
+            free(c);
+            return;
+        }
 
         if (sscanf(line, "%s\n", clean_line) == 1) {
             tmp = jrb_find_str(c->rooms, clean_line);
@@ -104,12 +121,12 @@ void *client_thread(void *arg) {
 
 
     printf("%s exiting %s ......\n", u2->name, clean_line);
-    close(c->fd);
-    fclose(fin);
-    fclose(fout);
-
     pthread_mutex_lock(r->lock);
-    jrb_delete_node(jrb_find_int(r->members, n));
+    fclose(u2->fin);
+    fclose(u2->fout);
+    close(c->fd);
+    tmp = jrb_find_int(r->members, n);
+    if(tmp != NULL) jrb_delete_node(tmp);
     free(u2);
     jrb_traverse(tmp, r->members) {
         u = (User *) tmp->val.v; 
@@ -134,8 +151,18 @@ void *room_thread(void *arg) {
         jrb_traverse(tmp, r->members) {
             u = (User *) tmp->val.v; 
             //fout = (FILE *) u->fout.v;
-            fputs((char *) dll_last(r->text)->val.s, u->fout);
-            fflush(u->fout);
+            if (fputs((char *) dll_last(r->text)->val.s, u->fout) != EOF) {
+                if(fflush(u->fout) == EOF) {
+                    fclose(u->fin);
+                    fclose(u->fout);
+                    jrb_delete_node(tmp);
+                }
+            }
+            else {
+                fclose(u->fin);
+                fclose(u->fout);
+                jrb_delete_node(tmp);
+            }
         }
         pthread_mutex_unlock(r->lock);
     }
