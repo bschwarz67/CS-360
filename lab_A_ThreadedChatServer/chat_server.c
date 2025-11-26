@@ -12,10 +12,10 @@ void *client_thread(void *arg) {
     char clean_line[1000], line[1000], name[1000];
     char *room_name, *message;
     FILE *fin, *fout;
-    JRB tmp, tmp3;
+    JRB tmp, tmp2;
     Client *c;
     Room *r;
-    User *u, *u2;
+    User *u;
 
     c = (Client *) arg;
     fin = fdopen(c->fd, "r");
@@ -31,8 +31,8 @@ void *client_thread(void *arg) {
         fputs(room_name, fout);
         fprintf(fout, ":");
         pthread_mutex_lock(r->lock);
-        jrb_traverse(tmp3, r->members) {
-            u = (User *) tmp3->val.v;
+        jrb_traverse(tmp2, r->members) {
+            u = (User *) tmp2->val.v;
             fprintf(fout, " ");
             fputs(u->name, fout);
         }
@@ -40,7 +40,6 @@ void *client_thread(void *arg) {
         fprintf(fout, "\n");
         fflush(fout);
     }
-    printf("1...\n");
     fprintf(fout, "\n");
     fprintf(fout, "Enter your chat name (no spaces):");
     fprintf(fout, "\n");
@@ -48,7 +47,6 @@ void *client_thread(void *arg) {
     done = 0;
     while(!done) {
         if(fgets(line, 1000, fin) == NULL) {
-            printf("exiting EOF reached ......\n");
             close(c->fd);
             fclose(fin);
             fclose(fout);
@@ -61,14 +59,12 @@ void *client_thread(void *arg) {
         }
 
     }
-    printf("2...\n");
     fprintf(fout, "Enter chat room:");
     fprintf(fout, "\n");
     fflush(fout);
     done = 0;
     while(!done) {
         if(fgets(line, 1000, fin) == NULL) {
-            printf("exiting EOF reached ......\n");
             close(c->fd);
             fclose(fin);
             fclose(fout);
@@ -86,17 +82,13 @@ void *client_thread(void *arg) {
             } 
             else {
                 r = (Room *) tmp->val.v;
-                u2 = (User *) malloc(sizeof(User));
-                strcpy(u2->name, name);
-                //u2->fout = new_jval_v((void *) fout);
-                u2->fout = fout;
+                u = (User *) malloc(sizeof(User));
+                strcpy(u->name, name);
+                u->fout = fout;
                 pthread_mutex_lock(r->lock);
-                jrb_insert_int(r->members, r->n, new_jval_v((void *) u2));
+                jrb_insert_int(r->members, r->n, new_jval_v((void *) u));
                 n = r->n;
                 r->n++;
-
-                //fout = (FILE *) u->fout.v;
-
                 message = (char *) malloc(sizeof(char) * 1000);
                 strcpy(message, name);
                 strcat(message, " has joined\n");
@@ -110,7 +102,6 @@ void *client_thread(void *arg) {
 
     
     }
-    printf("3...\n");
     done = 0;
     while(!done && fgets(line, 1000, fin) != NULL) {
         pthread_mutex_lock(r->lock);
@@ -119,31 +110,23 @@ void *client_thread(void *arg) {
         strcat(message, ": ");
         strcat(message, line);
         dll_append(r->text, new_jval_s(strdup(message)));
-        int k = pthread_cond_signal(r->send);
-        int p = pthread_mutex_unlock(r->lock);       
-        printf("client signalled the room %s with %d %d\n", message, k, p);
+        pthread_cond_signal(r->send);
+        pthread_mutex_unlock(r->lock);       
         free(message);
         
         
 
     }
-    printf("%s exiting %s ......\n", u2->name, clean_line);
 
     fclose(fin);
     pthread_mutex_lock(r->lock);
     close(c->fd);
-    //free the node User node for this client thread and free the memory occupied by the node, close the remaining stream
     tmp = jrb_find_int(r->members, n);
     if(tmp != NULL) {
-        fclose(u2->fout);
+        fclose(u->fout);
         jrb_delete_node(tmp);
     }
-    free(u2);
-
-    printf("%s freed\n",name);
-
-
-    //signal the room thread to broadcast the message that the user has left to all other users
+    free(u);
     
 
     message = (char *) malloc(sizeof(char) * 1000);
@@ -152,7 +135,6 @@ void *client_thread(void *arg) {
     dll_append(r->text, new_jval_s(strdup(message)));
     pthread_cond_signal(r->send);
     pthread_mutex_unlock(r->lock);
-    printf("room signaled, client freed\n");
     free(message);       
     free(c);
     
@@ -161,7 +143,6 @@ void *client_thread(void *arg) {
 
 
 void *room_thread(void *arg) {
-    printf("begin room thread\n");
     Room *r = (Room *) arg;
     User *u;
     JRB tmp;
@@ -170,30 +151,18 @@ void *room_thread(void *arg) {
     int i;
     pthread_mutex_lock(r->lock);
     while(1) {
-        printf("waiting....\n");
         pthread_cond_wait(r->send, r->lock);
-        printf("signalled..\n");
-        printf("room1..\n");
 
         jrb_traverse(tmp, r->members) {
             u = (User *) tmp->val.v; 
-            //fout = (FILE *) u->fout.v;
             dll_traverse(tmp2, r->text) {
                 if (fputs((char *) tmp2->val.s, u->fout) != EOF) {
                     if(fflush(u->fout) == EOF) {
-                        //fclose(u->fout);
-                        //jrb_delete_node(tmp);
-                        //these is could be potentially be getting added twice, should only get added once
                         i = (int) tmp->key.i;
                         dll_append(l, new_jval_i(i));
                     }
-                    else {
-                        printf("%s\n",tmp2->val.s);
-                    }
                 }
                 else {
-                    //fclose(u->fout);
-                    //jrb_delete_node(tmp);
                     i = (int) tmp->key.i;
                     dll_append(l, new_jval_i(i));
                 }
@@ -202,10 +171,8 @@ void *room_thread(void *arg) {
         }
         free_dllist(r->text);
         r->text = new_dllist();
-        printf("room2..\n");
         if(!dll_empty(l)) {
             dll_traverse(tmp2, l) {
-                printf("room5..\n");
                 i = (int) tmp2->val.i;
 
                 if(jrb_find_int(r->members, i) != NULL) {
@@ -214,17 +181,13 @@ void *room_thread(void *arg) {
                     fclose(u->fout);
                 }
                  
-                printf("room6..\n");
             }
             free_dllist(l);
             l = new_dllist();
         }
         
-        printf("room7..\n");
-        printf("room8\n");
     }
   
-    printf("end room thread\n");
 }
 
 int main(int argc, char **argv) {
@@ -265,8 +228,5 @@ int main(int argc, char **argv) {
         c->rooms = rooms;
         pthread_create(&tid2, NULL, client_thread, c);        
     }
-
-    
-    
     return 0;
 }
