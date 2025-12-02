@@ -20,29 +20,24 @@ void *client_thread(void *arg) {
     c = (Client *) arg;
     fin = fdopen(c->fd, "r");
     fout = fdopen(c->fd, "w");
-    fprintf(fout, "Chat Rooms:");
-    fprintf(fout, "\n");
-    fprintf(fout, "\n");
+    message = (char *) malloc(sizeof(char) * 1000);
+    fprintf(fout, "Chat Rooms:\n\n");
     fflush(fout);
     
     jrb_traverse(tmp, c->rooms) {
         room_name = (char *) tmp->key.s;
         r = (Room *) tmp->val.v;
-        fputs(room_name, fout);
-        fprintf(fout, ":");
+        fprintf(fout, "%s:", room_name);
         pthread_mutex_lock(r->lock);
         jrb_traverse(tmp2, r->members) {
             u = (User *) tmp2->val.v;
-            fprintf(fout, " ");
-            fputs(u->name, fout);
+            fprintf(fout, " %s", u->name);
         }
         pthread_mutex_unlock(r->lock);
         fprintf(fout, "\n");
         fflush(fout);
     }
-    fprintf(fout, "\n");
-    fprintf(fout, "Enter your chat name (no spaces):");
-    fprintf(fout, "\n");
+    fprintf(fout, "\nEnter your chat name (no spaces):\n");
     fflush(fout);
     done = 0;
     while(!done) {
@@ -59,8 +54,7 @@ void *client_thread(void *arg) {
         }
 
     }
-    fprintf(fout, "Enter chat room:");
-    fprintf(fout, "\n");
+    fprintf(fout, "Enter chat room:\n");
     fflush(fout);
     done = 0;
     while(!done) {
@@ -89,11 +83,9 @@ void *client_thread(void *arg) {
                 jrb_insert_int(r->members, r->n, new_jval_v((void *) u));
                 n = r->n;
                 r->n++;
-                message = (char *) malloc(sizeof(char) * 1000);
                 strcpy(message, name);
                 strcat(message, " has joined\n");
                 dll_append(r->text, new_jval_s(strdup(message)));
-                free(message);
                 pthread_cond_signal(r->send);       
                 pthread_mutex_unlock(r->lock);
                 done = 1;
@@ -105,31 +97,25 @@ void *client_thread(void *arg) {
     done = 0;
     while(!done && fgets(line, 1000, fin) != NULL) {
         pthread_mutex_lock(r->lock);
-        message = (char *) malloc(sizeof(char) * 1000);
         strcpy(message, name);
         strcat(message, ": ");
         strcat(message, line);
         dll_append(r->text, new_jval_s(strdup(message)));
         pthread_cond_signal(r->send);
         pthread_mutex_unlock(r->lock);       
-        free(message);
-        
-        
-
     }
-
     fclose(fin);
     pthread_mutex_lock(r->lock);
     close(c->fd);
     tmp = jrb_find_int(r->members, n);
     if(tmp != NULL) {
+        //free(tmp->val.v);
         fclose(u->fout);
         jrb_delete_node(tmp);
     }
     free(u);
     
 
-    message = (char *) malloc(sizeof(char) * 1000);
     strcpy(message, name);
     strcat(message, " has left\n");
     dll_append(r->text, new_jval_s(strdup(message)));
@@ -152,7 +138,6 @@ void *room_thread(void *arg) {
     pthread_mutex_lock(r->lock);
     while(1) {
         pthread_cond_wait(r->send, r->lock);
-
         jrb_traverse(tmp, r->members) {
             u = (User *) tmp->val.v; 
             dll_traverse(tmp2, r->text) {
@@ -167,7 +152,6 @@ void *room_thread(void *arg) {
                     dll_append(l, new_jval_i(i));
                 }
             }
-            
         }
         free_dllist(r->text);
         r->text = new_dllist();
@@ -175,12 +159,12 @@ void *room_thread(void *arg) {
             dll_traverse(tmp2, l) {
                 i = (int) tmp2->val.i;
 
-                if(jrb_find_int(r->members, i) != NULL) {
-                    u = (User *) jrb_find_int(r->members, i)->val.v;
-                    jrb_delete_node(jrb_find_int(r->members, i));
+                tmp = jrb_find_int(r->members, i);
+                if(tmp != NULL) {
+                    u = (User *) tmp->val.v;
+                    jrb_delete_node(tmp);
                     fclose(u->fout);
                 }
-                 
             }
             free_dllist(l);
             l = new_dllist();
