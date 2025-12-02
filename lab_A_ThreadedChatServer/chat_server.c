@@ -109,7 +109,6 @@ void *client_thread(void *arg) {
     close(c->fd);
     tmp = jrb_find_int(r->members, n);
     if(tmp != NULL) {
-        //free(tmp->val.v);
         fclose(u->fout);
         jrb_delete_node(tmp);
     }
