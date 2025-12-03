@@ -9,7 +9,7 @@
 
 void *client_thread(void *arg) {
     int n, done;
-    char clean_line[1000], line[1000], name[1000];
+    char line[1000], name[1000];
     char *room_name, *message;
     FILE *fin, *fout;
     JRB tmp, tmp2;
@@ -48,8 +48,7 @@ void *client_thread(void *arg) {
             free(c);
             return NULL;
         }
-        if (sscanf(line, "%s\n", clean_line) == 1) {
-            strcpy(name, clean_line);
+        if (sscanf(line, "%s\n", name) == 1) {
             done = 1;
         }
 
@@ -66,8 +65,8 @@ void *client_thread(void *arg) {
             return NULL;
         }
 
-        if (sscanf(line, "%s\n", clean_line) == 1) {
-            tmp = jrb_find_str(c->rooms, clean_line);
+        if (sscanf(line, "%s\n", line) == 1) {
+            tmp = jrb_find_str(c->rooms, line);
             
 
             if (tmp == NULL) {
@@ -144,11 +143,13 @@ void *room_thread(void *arg) {
                     if(fflush(u->fout) == EOF) {
                         i = (int) tmp->key.i;
                         dll_append(l, new_jval_i(i));
+                        break;
                     }
                 }
                 else {
                     i = (int) tmp->key.i;
                     dll_append(l, new_jval_i(i));
+                    break;
                 }
             }
         }
@@ -159,11 +160,10 @@ void *room_thread(void *arg) {
                 i = (int) tmp2->val.i;
 
                 tmp = jrb_find_int(r->members, i);
-                if(tmp != NULL) {
-                    u = (User *) tmp->val.v;
-                    jrb_delete_node(tmp);
-                    fclose(u->fout);
-                }
+
+                u = (User *) tmp->val.v;
+                jrb_delete_node(tmp);
+                fclose(u->fout);
             }
             free_dllist(l);
             l = new_dllist();
