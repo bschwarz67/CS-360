@@ -17,6 +17,5 @@ typedef struct {
 
 typedef struct {
     char name[300];
-    //Jval fout;
     FILE *fout;
 } User;
