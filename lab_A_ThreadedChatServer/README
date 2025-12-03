@@ -1,0 +1,17 @@
+link to writeup https://web.eecs.utk.edu/~jplank/plank/classes/cs360/360/labs/Lab-9-Chat/index.html
+
+this lab is an implementation of a simple multi threaded multi user chat server.
+
+to compile: make
+
+server command line: ./chat_server {host} {port} Bridge Baseball Politics Video-Games Art Music Movies Food Woodworking American-Idol
+
+The words after the port argument are the chat room names, for the general case this can be any number of rooms and include any names, but these are the names used in the grade script for the lab.
+
+client command: nc {host} {port}
+
+gradescript command: ./gradescript {1-100} {host} {port}
+
+gradeall command: ./gradeall {host} {port}
+
+host and port must match those of the server being tested.
