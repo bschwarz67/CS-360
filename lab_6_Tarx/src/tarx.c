@@ -31,6 +31,10 @@ int main(int argc, char **argv){
     FILE *f;
 
 
+    //TODO: record directories and go back later and change mod times, change mod times on files, allow modification for directories that do not allow modification to be able to write
+    //to these and then change it back. i think this is best dont when the direcory is created, then we can go in at the end and do the chmod to make them the right permissions when we change
+    //the mod times.
+
     while(!feof(stdin)) {
         fread(&len, 1, 4, stdin);
         len++;
