@@ -5,9 +5,15 @@
 #include <string.h>
 #include "/home/bryan/Desktop/PersonalCodeRepo/CS-360/Libfdr/include/jrb.h"
 #include "/home/bryan/Desktop/PersonalCodeRepo/CS-360/Libfdr/include/dllist.h"
-
 #include <fcntl.h>
 #include <unistd.h>
+
+
+typedef struct {
+    char *path;
+    unsigned short mode;
+    long mtime;
+} File;
 
 
 int compare(Jval v1, Jval v2)
@@ -21,75 +27,100 @@ int compare(Jval v1, Jval v2)
 int main(int argc, char **argv){
     char *buf = (char* ) malloc(sizeof(char) * 1000);
     char *path, *bytes;
-    int len;
+    int len, r, flag = 1;
     unsigned long inode;
     unsigned short mode, fod;
     long mtime, size;
     JRB inodes = make_jrb();
     JRB tmp;
-    JRB dirs = make_jrb(); //strings
+    Dllist files = new_dllist();
+    Dllist tmp2;
+    File *file; 
     FILE *f;
+    //TODO: make a list of directories and files in the order that they are read in. Create the directories/files and make them writable. then go through the list in reverse and then change the modification time,
+    //then change the mode to the corect mode.
 
-
-    //TODO: record directories and go back later and change mod times, change mod times on files, allow modification for directories that do not allow modification to be able to write
-    //to these and then change it back. i think this is best dont when the direcory is created, then we can go in at the end and do the chmod to make them the right permissions when we change
-    //the mod times.
-
-    while(!feof(stdin)) {
-        fread(&len, 1, 4, stdin);
+    r = fread(&len, 1, 4, stdin);
+    while(r > 0) {
+        if(flag == 1) {
+            flag = 0;
+        }
+        else {
+            r = fread(&len, 1, 4, stdin);
+            if (r <= 0) break;
+        }
         len++;
         printf("length of path: %d\n", len);
 
         path = (char *) malloc(sizeof(char) * len);
-        fread(path, 1, len - 1, stdin);
+        r = fread(path, 1, len - 1, stdin);
+        if (r <= 0) break;
+        path[len - 1] = '\0';
         printf("path: %s\n",path);
 
-        fread(&inode, 1, 8, stdin);
+        r = fread(&inode, 1, 8, stdin);
+        if (r <= 0) break;
         printf("inode: %lu\n",inode);
 
-        fread(&mode, 1, 4, stdin);
-        printf("mode (octal): %o\n",mode);
-        fod = mode / 512;
-        fread(&mtime, 1, 8, stdin);
-        printf("modtime: %ld\n",mtime);
+        tmp = jrb_find_gen(inodes, new_jval_l(inode), compare);
 
-        if(fod == 64) { // is a file
-            tmp = jrb_find_gen(inodes, new_jval_l(inode), compare);
-            if (tmp == NULL) {
-                fread(&size, 1, 8, stdin);
-                printf("file size: %ld\n",size);
-                size++;
-                bytes = (char *) malloc(sizeof(char) * size);
-                fread(bytes, 1, size - 1, stdin);
-                printf("the bytes in the file: %s\n",bytes);
-                f = fopen(path, "w+"); //failing here when opening directories that dont have write permissions.
-                printf("test\n");
+        if (tmp == NULL) {
 
-                fwrite(bytes, size, 1, f);
-                free(bytes);
-                chmod(path, (mode_t) mode);
-                fclose(f);
+            r = fread(&mode, 1, 4, stdin);
+            if (r <= 0) break;
+            printf("mode (octal): %o\n",mode);
+            fod = mode / 512;
+            r = fread(&mtime, 1, 8, stdin);
+            if (r <= 0) break;
+            printf("modtime: %d\n",mtime);
+
+            if(fod == 64) { // is a file
                 
-                jrb_insert_gen(inodes, new_jval_l(inode), new_jval_s(strdup(path)), compare);
-            }
-            else {
-                link(path, tmp->val.s);
-            }
+                
+                r = fread(&size, 1, 8, stdin);
+                if (r <= 0) break;
+                printf("file size: %ld\n",size);
+                //size++;
+                bytes = (char *) malloc(sizeof(char) * size);
+                r = fread(bytes, sizeof(char), size /*- 1*/, stdin);
+                if (r <= 0) break;
+                //bytes[size - 1] = '\0';
+                printf("the bytes in the file: %s\n",bytes);
+                f = fopen(path, "w+"); 
+                chmod(path, 0777);
+                printf("here\n");
+                fwrite(bytes, sizeof(char), size /*- 1*/, f);
+                printf("heere\n");
+                free(bytes);
+                //chmod(path, (mode_t) mode);
+                fclose(f);
 
-
-        }
-        else { //is a directory
-            tmp = jrb_find_gen(inodes, new_jval_l(inode), compare);
-            if (tmp == NULL) {
-                mkdir(path, (mode_t) mode);
-                jrb_insert_gen(inodes, new_jval_l(inode), new_jval_s(strdup(path)), compare);
             }
-            else {
-                link(path, tmp->val.s);
+            else { //is a directory
+                printf("inserted\n");
+                mkdir(path, 0777);
+                
             }
+            jrb_insert_gen(inodes, new_jval_l(inode), new_jval_s(strdup(path)), compare);
+            file = (File*) malloc(sizeof(File));
+            file->path = (char *) malloc(sizeof(char) * len);
+            strcpy(file->path, path);
+            file->mode = mode;
+            file->mtime = mtime;
+            dll_append(files, new_jval_v(file));
         }
+        else {
+            //f = fopen(path, "w+");
+            link(tmp->val.s, path);
+            chmod(path, 0777);
+            //fclose(f);
+        }   
         free(path);
         
     }
-
+    printf("continue\n");
+    dll_rtraverse(tmp2, files) {
+        file = (File *) tmp2->val.v;
+        chmod(file->path, file->mode);
+    }
 }
