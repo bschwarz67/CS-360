@@ -7,6 +7,7 @@
 #include "/home/bryan/Desktop/PersonalCodeRepo/CS-360/Libfdr/include/dllist.h"
 #include <fcntl.h>
 #include <unistd.h>
+#include <utime.h>
 
 
 typedef struct {
@@ -37,8 +38,7 @@ int main(int argc, char **argv){
     Dllist tmp2;
     File *file; 
     FILE *f;
-    //TODO: make a list of directories and files in the order that they are read in. Create the directories/files and make them writable. then go through the list in reverse and then change the modification time,
-    //then change the mode to the corect mode.
+    struct utimbuf *time;
 
     r = fread(&len, 1, 4, stdin);
     while(r > 0) {
@@ -110,10 +110,8 @@ int main(int argc, char **argv){
             dll_append(files, new_jval_v(file));
         }
         else {
-            //f = fopen(path, "w+");
             link(tmp->val.s, path);
             chmod(path, 0777);
-            //fclose(f);
         }   
         free(path);
         
@@ -121,6 +119,13 @@ int main(int argc, char **argv){
     printf("continue\n");
     dll_rtraverse(tmp2, files) {
         file = (File *) tmp2->val.v;
+        time = (struct utimbuf *) malloc(sizeof(struct utimbuf));
+        time->modtime = (time_t) file->mtime;
+        time->actime = (time_t) file->mtime;
+        utime(file->path, time);
         chmod(file->path, file->mode);
+        free(time);
+
+        
     }
 }
