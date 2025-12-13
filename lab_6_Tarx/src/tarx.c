@@ -28,7 +28,7 @@ int compare(Jval v1, Jval v2)
 int main(int argc, char **argv){
     char *buf = (char* ) malloc(sizeof(char) * 1000);
     char *path, *bytes;
-    int len, r, flag = 1;
+    int len, r, s, flag = 1;
     unsigned long inode;
     unsigned short mode, fod;
     long mtime, size;
@@ -37,9 +37,8 @@ int main(int argc, char **argv){
     Dllist files = new_dllist();
     Dllist tmp2;
     File *file; 
-    FILE *f;
+    FILE *f = NULL;
     struct utimbuf *time;
-
     r = fread(&len, 1, 4, stdin);
     while(r > 0) {
         if(flag == 1) {
@@ -47,58 +46,80 @@ int main(int argc, char **argv){
         }
         else {
             r = fread(&len, 1, 4, stdin);
-            if (r <= 0) break;
+            if (r < 4) break;
+
         }
         len++;
-        printf("length of path: %d\n", len);
 
         path = (char *) malloc(sizeof(char) * len);
         r = fread(path, 1, len - 1, stdin);
-        if (r <= 0) break;
+        if (r < len - 1) {
+            fprintf(stderr, "error!\n");
+            return 0;
+        }
         path[len - 1] = '\0';
-        printf("path: %s\n",path);
 
         r = fread(&inode, 1, 8, stdin);
-        if (r <= 0) break;
-        printf("inode: %lu\n",inode);
+        if (r < 8) {
+            fprintf(stderr, "error!\n");
+            return 0;
+        }
 
         tmp = jrb_find_gen(inodes, new_jval_l(inode), compare);
 
         if (tmp == NULL) {
 
             r = fread(&mode, 1, 4, stdin);
-            if (r <= 0) break;
-            printf("mode (octal): %o\n",mode);
+            if (r < 4) {
+                fprintf(stderr, "error!\n");
+                return 0;
+            }
             fod = mode / 512;
             r = fread(&mtime, 1, 8, stdin);
-            if (r <= 0) break;
-            printf("modtime: %d\n",mtime);
+            if (r < 8) {
+                fprintf(stderr, "error!\n");
+                return 0;
+            }
 
             if(fod == 64) { // is a file
                 
                 
                 r = fread(&size, 1, 8, stdin);
-                if (r <= 0) break;
-                printf("file size: %ld\n",size);
-                //size++;
+                if (r < 8) {
+                    fprintf(stderr, "error!\n");
+                    return 0;
+                };
                 bytes = (char *) malloc(sizeof(char) * size);
-                r = fread(bytes, sizeof(char), size /*- 1*/, stdin);
-                if (r <= 0) break;
-                //bytes[size - 1] = '\0';
-                printf("the bytes in the file: %s\n",bytes);
-                f = fopen(path, "w+"); 
-                chmod(path, 0777);
-                printf("here\n");
-                fwrite(bytes, sizeof(char), size /*- 1*/, f);
-                printf("heere\n");
+                r = fread(bytes, sizeof(char), size, stdin);
+                if (r < size) {
+                    fprintf(stderr, "error!\n");
+                    return 0;
+                }
+                f = fopen(path, "w+");
+                if(f == NULL) {
+                    fprintf(stderr, "error!\n");
+                    return 0;
+                } 
+                s = chmod(path, 0777);
+                if(s == -1) {
+                    fprintf(stderr, "error!\n");
+                    return 0;
+                }
+                s = fwrite(bytes, sizeof(char), size, f);
+                if(s < size) {
+                    fprintf(stderr, "error!\n");
+                    return 0;
+                }
                 free(bytes);
-                //chmod(path, (mode_t) mode);
                 fclose(f);
 
             }
             else { //is a directory
-                printf("inserted\n");
-                mkdir(path, 0777);
+                s = mkdir(path, 0777);
+                if(s == -1) {
+                    fprintf(stderr, "error!\n");
+                    return 0;
+                }
                 
             }
             jrb_insert_gen(inodes, new_jval_l(inode), new_jval_s(strdup(path)), compare);
@@ -110,13 +131,20 @@ int main(int argc, char **argv){
             dll_append(files, new_jval_v(file));
         }
         else {
-            link(tmp->val.s, path);
-            chmod(path, 0777);
+            s = link(tmp->val.s, path);
+            if(s == -1) {
+                fprintf(stderr, "error!\n");
+                return 0;
+            }
+            s = chmod(path, 0777);
+            if(s == -1) {
+                fprintf(stderr, "error!\n");
+                return 0;
+            }
         }   
         free(path);
         
     }
-    printf("continue\n");
     dll_rtraverse(tmp2, files) {
         file = (File *) tmp2->val.v;
         time = (struct utimbuf *) malloc(sizeof(struct utimbuf));
@@ -128,4 +156,5 @@ int main(int argc, char **argv){
 
         
     }
+    return 1;
 }
