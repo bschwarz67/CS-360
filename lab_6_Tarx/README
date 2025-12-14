@@ -1,0 +1,14 @@
+link to lab:
+https://web.eecs.utk.edu/~jplank/plank/classes/cs360/360/labs/Lab-6-Tarx/index.html
+
+
+this lab is a continuation of lab 5, which condenses a summary of a directory and its subdirectories/files into a single .tarc file. This lab was to write a program that recreates the directory
+from the tarc file. Maybe the most straightforward lab in the course, but some small bugs such as my lack of precision with C IO libraries cost me a ton of time. 
+That's what I get for skipping over this lab and coming back to it at the end.
+
+compile: make
+run/grade: ./gradescript (1-100) or ./gradeall or ./bin/tarx < {x}.tarc if you just want to test the bin on a file you happen to have.
+
+Quirks: I read/write fixed sizes because I am assuming the .tarc file is being created and unpacked on my machine, where those are the correct sizes of the data types. As in the lab 5, I 
+took the part of the gradescript that limits the number of open files out because I didnt want to bother with configuring it on my machine. I promise I close my files after I write to them,
+shouldn't be an issue.
