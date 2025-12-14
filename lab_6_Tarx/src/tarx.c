@@ -49,19 +49,18 @@ int main(int argc, char **argv){
                 r = fread(&len, 1, 4, stdin);
                 if(r < 4) {
                     if (r == 0) {
-                    break;
+                        break;
                     }
                     else {
                         fprintf(stderr, "error!\n");
                         return 0;
                     }
                 }
-                
             }
             len++;
             path = (char *) malloc(len);
             r = fread(path, 1, len - 1, stdin);
-            if (r != len - 1) {
+            if (r < len - 1) {
                 fprintf(stderr, "error!\n");
                 return 0;
             }
@@ -111,7 +110,7 @@ int main(int argc, char **argv){
                         fprintf(stderr, "error!\n");
                         return 0;
                     }
-                    s = fwrite(bytes, sizeof(char), size, f);
+                    s = fwrite(bytes, 1, size, f);
                     if(s < size) {
                         fprintf(stderr, "error!\n");
                         return 0;
@@ -151,7 +150,7 @@ int main(int argc, char **argv){
         }
     }
     else {
-        if(ferror(stdin)) {
+        if (r != 0) {
             fprintf(stderr, "error!\n");
             return 0;
         }
@@ -165,8 +164,6 @@ int main(int argc, char **argv){
         utime(file->path, time);
         chmod(file->path, file->mode);
         free(time);
-
-        
     }
     return 1;
 }

@@ -91,7 +91,7 @@ if [ $elines = yes ]; then
 fi
 
 
-$dir5/bin/tarc $enum > /dev/null 2>tmp-$enum-tarc-stderr.txt
+$dir5/bin/plank_tarc $enum > /dev/null 2>tmp-$enum-tarc-stderr.txt
 
 if [ `wc tmp-$enum-tarc-stderr.txt | awk '{ print $1 }'` != 0 ]; then
   echo "Problem $enum is incorrect."
@@ -105,7 +105,7 @@ if [ `wc tmp-$enum-tarc-stderr.txt | awk '{ print $1 }'` != 0 ]; then
   exit 1
 fi
   
-$dir5/bin/tarc $enum | $dir5/bin/tarf | sed 's/^Inode [0-9]* //' > tmp-$enum-tarf-output.txt
+$dir5/bin/plank_tarc $enum | $dir5/bin/tarf | sed 's/^Inode [0-9]* //' > tmp-$enum-tarf-output.txt
 
 out=`diff tmp-$enum-correct-stdout.txt tmp-$enum-tarf-output.txt | wc | awk '{ print $1 }'`
 
