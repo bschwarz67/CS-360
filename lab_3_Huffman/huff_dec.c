@@ -26,17 +26,22 @@ int main(int argc, char **argv)
     hn_root = hn;
     hn->zero = NULL;
     hn->one = NULL;
-    hn->s_zero = malloc(sizeof(char) * 10001);
-    hn->s_one = malloc(sizeof(char) * 10001);
-
+    //hn->s_zero = malloc(sizeof(char) * 10001);
+    //hn->s_one = malloc(sizeof(char) * 10001);
+    //fprintf(stderr,"1\n");
     fd = fopen(argv[1], "r");
     while(1) {
         str_buff = (char *) malloc(sizeof(char) * 10001);
         bit_buff = (char *) malloc(sizeof(char) * 10001);
+        //fprintf(stderr,"2\n");
         j = 0;
         i = fread(&c, 1, 1, fd);
 
-        if(i <= 0) break;
+        if(i <= 0) {
+            free(str_buff);
+            free(bit_buff);
+            break;
+        }
         if (c == 0) return 0; 
         str_buff[j] = c;
         j++;
@@ -67,19 +72,21 @@ int main(int argc, char **argv)
         for(k = 0; k < j; k++) {
             if(k == j - 1) {
                 if(bit_buff[k] == '1') {
+                    hn->s_one = malloc(sizeof(char) * 10001); // new
                     strcpy(hn->s_one, str_buff);
                 }
                 else {
+                    hn->s_zero = malloc(sizeof(char) * 10001); //new
                     strcpy(hn->s_zero, str_buff);
                 } 
             }
             else if(bit_buff[k] == '1') {
                 if(hn->one == NULL) {
                     hn->one = malloc(sizeof(HN));
-                    hn->one->zero = NULL;
-                    hn->one->one = NULL;
-                    hn->one->s_zero = malloc(sizeof(char) * 10001);
-                    hn->one->s_one = malloc(sizeof(char) * 10001);
+                    hn->one->s_zero = NULL;
+                    hn->one->s_one = NULL;
+                    //hn->one->s_zero = malloc(sizeof(char) * 10001);
+                    //hn->one->s_one = malloc(sizeof(char) * 10001);
                     hn = hn->one;
                 }
                 else hn = hn->one;
@@ -87,17 +94,21 @@ int main(int argc, char **argv)
             else {
                 if(hn->zero == NULL) {
                     hn->zero = malloc(sizeof(HN));
-                    hn->zero->zero = NULL;
-                    hn->zero->one = NULL;
-                    hn->zero->s_zero = malloc(sizeof(char) * 10001);
-                    hn->zero->s_one = malloc(sizeof(char) * 10001);
+                    hn->zero->s_zero = NULL;
+                    hn->zero->s_one = NULL;
+                    //hn->zero->s_zero = malloc(sizeof(char) * 10001);
+                    //hn->zero->s_one = malloc(sizeof(char) * 10001);
                     hn = hn->zero;
                 }
                 else hn = hn->zero;
             }
         }
         hn = hn_root;
-        if(i <= 0) break;
+        if(i <= 0) {
+            free(str_buff);
+            free(bit_buff);
+            break;
+        }
 
     }
     fclose(fd);
@@ -152,10 +163,10 @@ int main(int argc, char **argv)
         if(i > 0) k++; 
     }
     if(k - 4 != j) {
-        fprintf(stderr, "Error: file is not the correct size.\n");
+        fprintf(stderr, "Error: Total bits = %d, but file's size is %d\n", n, k);
         return 0;
     }
-    free(bit_buff);
+    //free(bit_buff);
     bit_buff = (char *) malloc(j * 8);
 
     
@@ -184,22 +195,35 @@ int main(int argc, char **argv)
     hn = hn_root;
     //printf("%d\n", i);
     //printf("%d\n", n);
-    while(i < n) {
+    while(i < n) { //test to see if the string at the position is null and if it is print an error and return?
         if(hn->zero == NULL && bit_buff[i] == '0') {
-
+            if(hn->s_zero == NULL) {
+                fprintf(stderr, "Unrecognized bits\n");
+                return 0;
+            }
             printf("%s", hn->s_zero);
             hn = hn_root;
         }
         else if(hn->one == NULL && bit_buff[i] == '1') {
-
+            if(hn->s_one == NULL) {
+                fprintf(stderr, "Unrecognized bits\n");
+                return 0;
+            }
             printf("%s", hn->s_one);
             hn = hn_root;
         }
         else if(hn->zero != NULL && bit_buff[i] == '0') {
+            if(i == n - 1) {
+                fprintf(stderr, "Unrecognized bits\n");
+                return 0;
+            }
             hn = hn->zero;
         }
         else if(hn->one != NULL && bit_buff[i] == '1') {
-
+            if(i == n - 1) {
+                fprintf(stderr, "Unrecognized bits\n");
+                return 0;
+            }
             hn = hn->one;
         }
         else {
