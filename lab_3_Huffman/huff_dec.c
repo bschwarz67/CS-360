@@ -14,10 +14,6 @@ typedef struct huff_node {
 
 int main(int argc, char **argv)
 {
-
-
-
-
     int i, j, k, l, m, n;
     FILE *fd;
     char c = '1', *str_buff, *bit_buff;
@@ -28,7 +24,6 @@ int main(int argc, char **argv)
     hn->one = NULL;
     //hn->s_zero = malloc(sizeof(char) * 10001);
     //hn->s_one = malloc(sizeof(char) * 10001);
-    //fprintf(stderr,"1\n");
     fd = fopen(argv[1], "r");
     while(1) {
         str_buff = (char *) malloc(sizeof(char) * 10001);
@@ -166,7 +161,6 @@ int main(int argc, char **argv)
         fprintf(stderr, "Error: Total bits = %d, but file's size is %d\n", n, k);
         return 0;
     }
-    //free(bit_buff);
     bit_buff = (char *) malloc(j * 8);
 
     
@@ -184,18 +178,9 @@ int main(int argc, char **argv)
         
     }
     bit_buff[m] = '\0';
-
-    /*
-    for(i = 0; i < m; i++) {
-        printf("%c", bit_buff[i]);
-    }
-    printf("\n");
-    */
     i = 0;
     hn = hn_root;
-    //printf("%d\n", i);
-    //printf("%d\n", n);
-    while(i < n) { //test to see if the string at the position is null and if it is print an error and return?
+    while(i < n) { 
         if(hn->zero == NULL && bit_buff[i] == '0') {
             if(hn->s_zero == NULL) {
                 fprintf(stderr, "Unrecognized bits\n");
@@ -213,17 +198,9 @@ int main(int argc, char **argv)
             hn = hn_root;
         }
         else if(hn->zero != NULL && bit_buff[i] == '0') {
-            if(i == n - 1) {
-                fprintf(stderr, "Unrecognized bits\n");
-                return 0;
-            }
             hn = hn->zero;
         }
         else if(hn->one != NULL && bit_buff[i] == '1') {
-            if(i == n - 1) {
-                fprintf(stderr, "Unrecognized bits\n");
-                return 0;
-            }
             hn = hn->one;
         }
         else {
