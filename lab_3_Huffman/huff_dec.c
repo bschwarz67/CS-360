@@ -22,13 +22,10 @@ int main(int argc, char **argv)
     hn_root = hn;
     hn->zero = NULL;
     hn->one = NULL;
-    //hn->s_zero = malloc(sizeof(char) * 10001);
-    //hn->s_one = malloc(sizeof(char) * 10001);
     fd = fopen(argv[1], "r");
     while(1) {
         str_buff = (char *) malloc(sizeof(char) * 10001);
         bit_buff = (char *) malloc(sizeof(char) * 10001);
-        //fprintf(stderr,"2\n");
         j = 0;
         i = fread(&c, 1, 1, fd);
 
@@ -80,8 +77,6 @@ int main(int argc, char **argv)
                     hn->one = malloc(sizeof(HN));
                     hn->one->s_zero = NULL;
                     hn->one->s_one = NULL;
-                    //hn->one->s_zero = malloc(sizeof(char) * 10001);
-                    //hn->one->s_one = malloc(sizeof(char) * 10001);
                     hn = hn->one;
                 }
                 else hn = hn->one;
@@ -91,8 +86,6 @@ int main(int argc, char **argv)
                     hn->zero = malloc(sizeof(HN));
                     hn->zero->s_zero = NULL;
                     hn->zero->s_one = NULL;
-                    //hn->zero->s_zero = malloc(sizeof(char) * 10001);
-                    //hn->zero->s_one = malloc(sizeof(char) * 10001);
                     hn = hn->zero;
                 }
                 else hn = hn->zero;
@@ -108,37 +101,39 @@ int main(int argc, char **argv)
     }
     fclose(fd);
     fd = fopen(argv[2], "r");
-    i = 1;
-    j = 0;
-    while(i > 0) {
-        i = fread(&c, 1, 1, fd);
-        j++;
-    }
 
-    if(j < 5) {
-        fprintf(stderr, "Error: file is not the correct size.\n");
-        return 0;
-    }
 
     j = 0;
     k = 0;
     fseek(fd, -4, SEEK_END);
-    fread(&i, 1, 1, fd);
+    if(fread(&i, 1, 1, fd) <= 0) {
+        fprintf(stderr, "Error: file is not the correct size.\n");
+        return 0;
+    }
     for(j = 0; j < 8; j++) {
         k += pow(2, j) * (i % 2);
         i = i / 2;
     }
-    fread(&i, 1, 1, fd);
+    if(fread(&i, 1, 1, fd) <= 0) {
+        fprintf(stderr, "Error: file is not the correct size.\n");
+        return 0;
+    }
     for(j = 8; j < 16; j++) {
         k += pow(2, j) * (i % 2);
         i = i / 2;
     }
-    fread(&i, 1, 1, fd);
+    if(fread(&i, 1, 1, fd) <= 0) {
+        fprintf(stderr, "Error: file is not the correct size.\n");
+        return 0;
+    }
     for(j = 16; j < 24; j++) {
         k += pow(2, j) * (i % 2);
         i = i / 2;
     }
-    fread(&i, 1, 1, fd);
+    if(fread(&i, 1, 1, fd) <= 0) {
+        fprintf(stderr, "Error: file is not the correct size.\n");
+        return 0;
+    }
     for(j = 24; j < 32; j++) {
         k += pow(2, j) * (i % 2);
         i = i / 2;
