@@ -146,6 +146,7 @@ int main(int argc, char **argv)
     else j = n / 8;
 
 
+    
     i = 1;
     k = 0;
     while(i > 0) {
@@ -156,6 +157,9 @@ int main(int argc, char **argv)
         fprintf(stderr, "Error: Total bits = %d, but file's size is %d\n", n, k);
         return 0;
     }
+    
+
+
     bit_buff = (char *) malloc(j * 8);
 
     
