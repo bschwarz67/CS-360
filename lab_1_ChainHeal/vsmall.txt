@@ -1,0 +1,2 @@
+   -5    -1     0     2 Urgosa_the_Healing_Shaman
+   -2    -1     4     4 Tempest_the_Worst
