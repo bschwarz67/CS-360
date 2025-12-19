@@ -10,6 +10,8 @@ The words after the port argument are the chat room names, for the general case 
 
 client command: nc {host} {port}
 
+tester command: ./laba-tester {1-100} {host} {port}
+
 gradescript command: ./gradescript {1-100} {host} {port}
 
 gradeall command: ./gradeall {host} {port}
