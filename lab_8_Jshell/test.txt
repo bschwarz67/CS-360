@@ -1,0 +1,140 @@
+  MOTHER_OF Lxxx Jxxxxxxxxxxxx
+  MOTHER_OF Bxxxxx Hxxxxxx
+
+PERSON Wxxxxxx Rxxx
+
+
+PERSON Kayla Proud
+  SEX F
+
+PERSON Katelyn Pilferage
+  MOTHER_OF Luke Juxtaposition
+  MOTHER_OF Bailey Hamster
+
+PERSON William Rove
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+PERSON Axxxx Dxxxxx
+PERSON Axxxxxx Hxxxxxx PxD
+PERSON Axxxxxx Sxxxx
+PERSON Axxxxxx Uxxxxxxxxxxxx
+PERSON Axxxxxxxx Cxxxxxx
+PERSON Bxxxxx Exxx Axxxxxxxx
+PERSON Bxxxxx Hxxxxxx
+PERSON Bxxxxxx Txxxxxxxxxxxx
+PERSON Cxxxx Axxxx Sxxxx
+PERSON Cxxxx Pxxxxxxxx
+PERSON Cxxxxx Axxxxxxx
+PERSON Cxxxxx Bxxxx Sxxxxxxxx
+PERSON Cxxxxx Oxxxx
+PERSON Cxxxxxxxxxx Exxxxx
+PERSON Exx Pxxxxx
+PERSON Exxx Hxxxxx
+PERSON Exxxxx Sxxxxxxxxxx
+PERSON Gxxxxxxxx Vxxxx
+PERSON Ixx Sxxxxxx
+PERSON Jxxxx Exxxxxx
+PERSON Jxxxxx Bxxxxxxxxxxx
+PERSON Jxxxxx Cxxxxxxxx
+PERSON Jxxxxx Ixxxxxxxxx
+PERSON Jxxxxx Sxxxxxxx
+PERSON Jxxxxxx Vxxxxxx
+PERSON Jxxxxxxx Kxxxxx
+PERSON Kxxx Fxxxxxx
+PERSON Kxxxx Pxxxx
+PERSON Kxxxxx Txxxxxx
+PERSON Kxxxxxx Ixx
+PERSON Kxxxxxx Pxxxxxxxx
+PERSON Lxxx Jxxxxxxxxxxxx
+PERSON Mxx Mxxxxxx
+PERSON Mxxxxxxx Lxxxx
+PERSON Mxxxxxxxx Mxxxxxx
+PERSON Nxxxxxxx Fxxxxxxxxxxxx
+PERSON Oxxx Cxxxxx Fxxx
+PERSON Oxxxxx Bxxxxxxxxx
+PERSON Oxxxxx Pxxxxxxxxxxx
+PERSON Pxxxx Exxxxxxxxx PxD
+PERSON Pxxxxx
+PERSON Pxxxxx Lxxxxxxxxxx
+PERSON Sxxxxx Axxxxxxx
+PERSON Sxxxxx Pxxx
+PERSON Sxxxxx Pxxxxxxxx
+PERSON Sxxxxxxx Axxxxxxx
+PERSON Sxxxxxxx Dxxxxxxxxx PxD
+PERSON Txxxx Bxxxx Axxxxxxx
+PERSON Wxxxx Cxxxxxx
+PERSON Wxxxxxx Rxxx
+PERSON Xxxxxx Mxxxxxxx
+PERSON Zxxx Ixxxxxxx
+  SEX F
+  SEX F
+  SEX F
+  SEX F
+  SEX F
+  SEX F
+  SEX F
+  SEX F
+  SEX F
+  SEX F
+  SEX F
+  SEX F
+  SEX F
+  SEX M
+  SEX M
+  SEX M
+  SEX M
+  SEX M
+  SEX M
+  SEX M
+  SEX M
+  SEX M
+  SEX M
